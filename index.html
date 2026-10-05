@@ -542,7 +542,9 @@ const refreshHolidaySet = () => { holidaySet = new Set(state.holidays.map(h => h
 
 /* ---------------- Armazenamento ---------------- */
 const IS_GAS = typeof google !== 'undefined' && google.script && google.script.run;
-const API_URL = !IS_GAS && typeof window.CI_API_URL === 'string' && /^https:\/\/script\.google\.com\//.test(window.CI_API_URL) ? window.CI_API_URL : '';
+// Link de domínio (/a/macros/empresa.com/) exige login e bloqueia o GitHub: usa sempre o formato público /macros/s/
+const API_URL = !IS_GAS && typeof window.CI_API_URL === 'string' && /^https:\/\/script\.google\.com\//.test(window.CI_API_URL)
+  ? window.CI_API_URL.trim().replace(/\/a\/macros\/[^/]+\/s\//, '/macros/s/') : '';
 const MODE = IS_GAS ? 'gas' : API_URL ? 'api' : 'local';
 const gas = (fn, ...args) => new Promise((res, rej) => {
   google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args);
