@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de Incidentes</title>
+<base target="_top">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   Controle de Incidentes — visual
+   ========================================================= */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --ink: #0f1d2b;
+  --ink-2: #475569;
+  --ink-3: #8592a3;
+  --line: #e4e8ee;
+  --line-2: #d3dae3;
+  --accent: #0b6b7d;
+  --accent-2: #0a5968;
+  --accent-soft: #e4f2f4;
+
+  --ok: #15803d;      --ok-bg: #e8f6ee;
+  --today: #c2570c;   --today-bg: #fff1e3;
+  --late: #c0262d;    --late-bg: #fdecec;
+  --hold: #6043c9;    --hold-bg: #f0ecfd;
+  --muted: #64748b;   --muted-bg: #eef1f5;
+
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --shadow: 0 1px 2px rgba(15, 29, 43, .04), 0 4px 16px rgba(15, 29, 43, .05);
+  --font: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); font-size: 14px; line-height: 1.45; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+.hidden { display: none !important; }
+.num, td.date, .tab-n, .stat-n { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { max-width: 1440px; margin: 0 auto; padding: 22px 24px 32px; }
+
+/* ---------- Topo ---------- */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(140deg, #0e7f93, #0a5968); color: #fff; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(11, 107, 125, .3); }
+.brand h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.brand-sub { margin: 1px 0 0; font-size: 13px; color: var(--ink-3); }
+.top-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* ---------- Botões ---------- */
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; border: 1px solid var(--line-2); border-radius: var(--r-s); background: var(--surface); cursor: pointer; white-space: nowrap; font-weight: 500; transition: background .12s, border-color .12s, box-shadow .12s; }
+.btn:hover { border-color: #b8c2cf; background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 2px 6px rgba(11, 107, 125, .25); }
+.btn.primary:hover { background: var(--accent-2); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+.btn.ghost:hover { background: rgba(15, 29, 43, .06); }
+.btn.danger { background: var(--late); border-color: var(--late); color: #fff; font-weight: 600; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; display: inline-grid; place-items: center; }
+
+/* ---------- Contadores ---------- */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { position: relative; display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 14px 16px 13px 18px; border-radius: var(--r-m); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; overflow: hidden; transition: transform .12s, box-shadow .12s, border-color .12s; }
+.stat::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c); }
+.stat:hover { transform: translateY(-1px); }
+.stat-n { font-size: 28px; font-weight: 700; line-height: 1.1; color: var(--c); }
+.stat-l { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.stat.active { border-color: var(--c); background: var(--cbg); }
+.stat.zero .stat-n { color: var(--ink-3); }
+.stat.late { --c: var(--late); --cbg: var(--late-bg); }
+.stat.today { --c: var(--today); --cbg: var(--today-bg); }
+.stat.ok { --c: var(--ok); --cbg: var(--ok-bg); }
+.stat.wait { --c: var(--muted); --cbg: var(--muted-bg); }
+
+.alert { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 11px 16px; margin-bottom: 14px; border-radius: var(--r-m); background: var(--hold-bg); color: var(--hold); border: 1px solid #ddd4fa; font-weight: 500; }
+.alert.info { background: var(--accent-soft); color: var(--accent-2); border-color: #c5e1e6; }
+
+/* ---------- Painel principal ---------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); box-shadow: var(--shadow); overflow: hidden; }
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--muted-bg); border-radius: 10px; }
+.tab { height: 32px; padding: 0 13px; border: none; border-radius: 8px; background: transparent; cursor: pointer; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
+.tab .tab-n { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px; border-radius: 10px; background: rgba(15, 29, 43, .07); font-size: 12px; text-align: center; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(15, 29, 43, .12); }
+.tab[aria-selected="true"] .tab-n { background: var(--accent-soft); color: var(--accent-2); }
+.search { flex: 1 1 220px; position: relative; }
+.search input { width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid var(--line-2); border-radius: var(--r-s); background: var(--surface); }
+.search input:focus { border-color: var(--accent); outline: 3px solid var(--accent-soft); }
+.search svg { position: absolute; left: 12px; top: 11.5px; color: var(--ink-3); }
+
+.filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; padding: 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.filters label, .field label { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; font-weight: 500; }
+.filters select, .field input, .field select, .field textarea { width: 100%; height: 38px; padding: 0 10px; border: 1px solid var(--line-2); border-radius: var(--r-s); background: var(--surface); }
+.field input:focus, .field select:focus, .field textarea:focus, .filters select:focus { border-color: var(--accent); outline: 3px solid var(--accent-soft); }
+.field textarea { height: auto; min-height: 70px; padding: 8px 10px; resize: vertical; }
+.field input:disabled { background: var(--muted-bg); color: var(--ink-2); }
+.filters .filters-end { display: flex; align-items: flex-end; }
+
+/* ---------- Tabela ---------- */
+.sheet-scroll { overflow: auto; max-height: calc(100vh - 300px); min-height: 220px; }
+table.grid { width: 100%; border-collapse: separate; border-spacing: 0; }
+.grid th, .grid td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; white-space: nowrap; }
+.grid thead th { position: sticky; top: 0; z-index: 2; background: var(--surface-2); font-size: 11.5px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; cursor: pointer; user-select: none; }
+.grid thead th:hover { color: var(--ink-2); }
+.grid thead th.nosort { cursor: default; }
+.grid thead th .arrow { color: var(--accent); margin-left: 3px; }
+.grid tbody tr { cursor: pointer; transition: background .1s; }
+.grid tbody tr:hover td { background: #f6f9fb; }
+.grid tbody tr:last-child td { border-bottom: none; }
+.grid tbody tr td:first-child { box-shadow: inset 4px 0 0 var(--row, transparent); padding-left: 18px; }
+.grid tr.s-atrasado { --row: var(--late); }
+.grid tr.s-hoje { --row: var(--today); }
+.grid tr.s-emdia { --row: var(--ok); }
+.grid tr.s-postergado { --row: var(--hold); }
+.grid tr.s-tratar { --row: var(--late); }
+.grid tr.s-liberado { --row: var(--ok); }
+.grid tr.s-semdata { --row: #b6c0cc; }
+.grid td.num { text-align: right; }
+.grid td.date { color: var(--ink-2); }
+.grid td.strong { font-weight: 600; }
+.grid td.strong .sub { font-weight: 400; }
+.grid td.obs { white-space: normal; min-width: 140px; max-width: 240px; color: var(--ink-2); font-size: 13px; }
+.dim { color: var(--ink-3); }
+.sitw { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.sub { display: block; font-size: 12px; color: var(--ink-3); }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--pbg); color: var(--pc); }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill .ico { display: none; }
+.pill.emdia { --pc: var(--ok); --pbg: var(--ok-bg); }
+.pill.hoje { --pc: var(--today); --pbg: var(--today-bg); }
+.pill.atrasado { --pc: var(--late); --pbg: var(--late-bg); }
+.pill.postergado { --pc: var(--hold); --pbg: var(--hold-bg); }
+.pill.tratar { --pc: var(--late); --pbg: var(--late-bg); }
+.pill.liberado { --pc: var(--ok); --pbg: var(--ok-bg); }
+.pill.semdata { --pc: var(--muted); --pbg: var(--muted-bg); }
+
+.cell-actions { width: 1%; }
+.actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+.act { height: 32px; padding: 0 12px; border-radius: var(--r-s); border: 1px solid var(--line-2); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.act:hover { border-color: #b8c2cf; }
+.act.go { background: var(--accent); border-color: var(--accent); color: #fff; }
+.act.go:hover { background: var(--accent-2); }
+.act.more { width: 32px; padding: 0; font-size: 18px; line-height: 1; color: var(--ink-2); letter-spacing: 1px; }
+
+.menu { position: fixed; z-index: 40; min-width: 180px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); box-shadow: 0 12px 32px rgba(15, 29, 43, .16); }
+.menu button { display: flex; width: 100%; align-items: center; gap: 8px; padding: 9px 12px; border: none; background: none; border-radius: 6px; cursor: pointer; text-align: left; font-weight: 500; }
+.menu button:hover { background: var(--surface-2); }
+.menu button.del { color: var(--late); }
+.menu button.del:hover { background: var(--late-bg); }
+.menu hr { border: none; border-top: 1px solid var(--line); margin: 4px 2px; }
+
+.empty { padding: 56px 20px; text-align: center; color: var(--ink-2); }
+.empty .em-ico { font-size: 30px; display: block; margin-bottom: 8px; }
+.empty strong { display: block; font-size: 16px; color: var(--ink); margin-bottom: 4px; }
+
+.foot { margin-top: 12px; font-size: 12px; color: var(--ink-3); display: flex; gap: 16px; flex-wrap: wrap; }
+
+/* ---------- Diálogos ---------- */
+dialog { border: none; border-radius: var(--r-l); padding: 0; width: min(660px, calc(100vw - 24px)); max-height: calc(100vh - 32px); color: var(--ink); box-shadow: 0 24px 60px rgba(15, 29, 43, .28); }
+dialog.wide { width: min(940px, calc(100vw - 24px)); }
+dialog.small { width: min(460px, calc(100vw - 24px)); }
+dialog::backdrop { background: rgba(15, 29, 43, .45); backdrop-filter: blur(2px); }
+dialog[open] { animation: pop .16s ease-out; }
+@keyframes pop { from { transform: translateY(8px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+.dlg { display: flex; flex-direction: column; max-height: calc(100vh - 32px); }
+.dlg-head { padding: 20px 22px 14px; }
+.dlg-head h2 { margin: 0; font-size: 18px; letter-spacing: -.01em; }
+.dlg-head p { margin: 4px 0 0; color: var(--ink-3); font-size: 13px; }
+.dlg-body { padding: 4px 22px 18px; overflow-y: auto; }
+.dlg-foot { padding: 14px 22px; border-top: 1px solid var(--line); background: var(--surface-2); display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 16px; }
+.form-grid .full { grid-column: 1 / -1; }
+.field .hint { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+.req::after { content: " *"; color: var(--late); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+fieldset.extra { grid-column: 1 / -1; border: 1px solid var(--line); border-radius: var(--r-m); padding: 12px 14px 14px; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 14px; background: var(--surface-2); }
+fieldset.extra legend { padding: 0 6px; font-weight: 600; font-size: 13px; }
+fieldset.extra .full { grid-column: 1 / -1; }
+.calc-box { grid-column: 1 / -1; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; padding: 12px 14px; background: var(--accent-soft); border-radius: var(--r-m); font-size: 13px; color: var(--accent-2); }
+.calc-box b { font-variant-numeric: tabular-nums; color: var(--ink); }
+
+.list { border: 1px solid var(--line); border-radius: var(--r-m); max-height: 260px; overflow-y: auto; }
+.list-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.list-row:last-child { border-bottom: none; }
+.list-row .d { width: 92px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.list-row .n { flex: 1; }
+.list-row .act { height: 28px; font-weight: 500; }
+.act.del { color: var(--late); }
+.list-empty { padding: 18px; text-align: center; color: var(--ink-3); }
+.section-title { font-size: 14px; font-weight: 600; margin: 20px 0 8px; }
+.section-title:first-child { margin-top: 0; }
+.row-inline { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.row-inline .field { flex: 1 1 140px; }
+.radio-list { display: grid; gap: 6px; }
+.radio-list label { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-s); cursor: pointer; }
+.radio-list label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.radio-list input { accent-color: var(--accent); }
+.radio-list small { color: var(--ink-3); margin-left: auto; font-variant-numeric: tabular-nums; }
+.drop { display: block; border: 2px dashed var(--line-2); border-radius: var(--r-m); padding: 34px; text-align: center; color: var(--ink-2); cursor: pointer; }
+.drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.map-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 14px; }
+.preview { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-m); }
+.preview table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.preview th, .preview td { padding: 6px 9px; border-bottom: 1px solid var(--line); white-space: nowrap; text-align: left; }
+.preview th { background: var(--surface-2); font-weight: 600; color: var(--ink-2); }
+.note { font-size: 12.5px; color: var(--ink-2); background: var(--surface-2); padding: 9px 11px; border-radius: var(--r-s); margin-top: 10px; }
+
+/* ---------- Toast / carregando ---------- */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 11px 16px; border-radius: var(--r-m); display: flex; gap: 16px; align-items: center; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 50; max-width: calc(100vw - 24px); box-shadow: 0 10px 30px rgba(15, 29, 43, .25); }
+.toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
+.toast.err { background: var(--late); }
+.toast button { background: none; border: none; color: #8fdde9; font-weight: 600; cursor: pointer; padding: 0; }
+.loading { position: fixed; inset: 0; display: grid; place-items: center; z-index: 60; background: rgba(243, 245, 248, .65); }
+.spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--line-2); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1000px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- Celular: cada linha vira uma ficha ---------- */
+@media (max-width: 760px) {
+  .app { padding: 14px 12px 28px; }
+  .brand h1 { font-size: 17px; }
+  .brand-mark { width: 36px; height: 36px; }
+  .top-actions .btn .lbl { display: none; }
+  .top-actions .btn { padding: 0 10px; }
+  .stats { gap: 8px; }
+  .stat { padding: 11px 12px 10px 15px; }
+  .stat-n { font-size: 22px; }
+  .toolbar { padding: 10px; }
+  .seg { width: 100%; overflow-x: auto; }
+  .tab { flex: 1; padding: 0 6px; font-size: 13px; }
+  .tab .tab-n { margin-left: 2px; padding: 0 5px; }
+  #btnNew { flex: 1; justify-content: center; }
+  .sheet-scroll { max-height: none; }
+  .grid thead { display: none; }
+  .grid, .grid tbody { display: block; }
+  .grid tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 14px 14px 12px 18px; border-bottom: 8px solid var(--bg); box-shadow: inset 4px 0 0 var(--row, transparent); }
+  .grid tbody tr td:first-child { box-shadow: none; padding-left: 0; }
+  .grid td { display: block; padding: 0; border: none; white-space: normal; text-align: left !important; }
+  .grid td::before { content: attr(data-label); display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); margin-bottom: 1px; font-weight: 500; }
+  .grid td.wide, .grid td.obs, .grid td.cell-actions { grid-column: 1 / -1; max-width: none; }
+  .grid td.cell-actions::before { content: none; }
+  .grid td.cell-actions { width: auto; padding-top: 4px; }
+  .actions { justify-content: stretch; }
+  .actions .act.go { flex: 1; height: 38px; }
+  .actions .act.more { height: 38px; width: 42px; }
+  .grid tbody tr:hover td { background: none; }
+  .form-grid, fieldset.extra, .map-grid { grid-template-columns: 1fr; }
+  .toast { width: calc(100vw - 24px); justify-content: space-between; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div>
+        <h1>Controle de Incidentes</h1>
+        <p class="brand-sub" id="todayInfo"></p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost" id="btnImport" title="Importar planilha (.xlsx)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg><span class="lbl">Importar</span></button>
+      <button class="btn ghost" id="btnExport" title="Exportar para Excel">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16"/></svg><span class="lbl">Exportar</span></button>
+      <button class="btn ghost" id="btnSettings" title="Feriados e configurações">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span class="lbl">Feriados</span></button>
+      <button class="btn hidden" id="btnLock" title="Senha de edição">🔒 <span class="lbl">Entrar para editar</span></button>
+    </div>
+  </header>
+
+  <div class="alert info hidden" id="modeInfo">👁 Modo consulta: você vê todos os registros, mas só o responsável pode alterar.</div>
+  <section class="stats" id="counters" aria-label="Contadores de situação"></section>
+  <div class="alert hidden" id="alertPost" role="status"></div>
+
+  <main class="panel">
+    <div class="toolbar">
+      <nav class="seg" role="tablist">
+        <button class="tab" role="tab" data-view="pendentes" aria-selected="true">Pendentes <span class="tab-n" id="nPend">0</span></button>
+        <button class="tab" role="tab" data-view="postergados" aria-selected="false">Postergados <span class="tab-n" id="nPost">0</span></button>
+        <button class="tab" role="tab" data-view="liberados" aria-selected="false">Liberados <span class="tab-n" id="nLib">0</span></button>
+      </nav>
+      <div class="search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Pesquisar local, responsável, tipo, nº Fluig…" aria-label="Pesquisar">
+      </div>
+      <button class="btn" id="btnFilters" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>Filtros <span class="badge hidden" id="filterBadge"></span></button>
+      <button class="btn primary" id="btnNew">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Novo incidente</button>
+    </div>
+
+    <div class="filters hidden" id="filters">
+      <div><label for="fMesBase">Mês pela data</label>
+        <select id="fMesBase"><option value="dataIncidente">do incidente</option><option value="dataEmail">de envio do e-mail</option></select></div>
+      <div><label for="fMes">Mês</label><select id="fMes"></select></div>
+      <div><label for="fLocal">Local/Filial</label><select id="fLocal"></select></div>
+      <div><label for="fResp">Responsável</label><select id="fResp"></select></div>
+      <div><label for="fTipo">Tipo de incidente</label><select id="fTipo"></select></div>
+      <div><label for="fSit">Situação</label><select id="fSit"></select></div>
+      <div class="filters-end"><button class="btn ghost" id="btnClearFilters">Limpar filtros</button></div>
+    </div>
+
+    <div class="sheet-scroll">
+      <table class="grid" id="grid"><thead></thead><tbody></tbody></table>
+    </div>
+    <div class="empty hidden" id="empty"></div>
+  </main>
+
+  <footer class="foot"><span id="storageInfo"></span><span id="syncInfo" class="hidden">⟳ Atualizando…</span></footer>
+</div>
+
+<div class="menu hidden" id="rowMenu" role="menu"></div>
+
+<!-- ===== Novo / editar incidente ===== -->
+<dialog id="dlgIncident">
+  <form class="dlg" id="formIncident" novalidate>
+    <div class="dlg-head"><h2 id="incTitle">Novo incidente</h2><p>O prazo de dias úteis conta a partir da data de envio do e-mail.</p></div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <div class="field"><label class="req" for="iDataInc">Data do incidente</label><input type="date" id="iDataInc"><div class="hint">Apenas registro histórico.</div></div>
+        <div class="field"><label for="iDataEmail">Data de envio do e-mail</label><input type="date" id="iDataEmail"><div class="hint">Deixe em branco se ainda não enviou.</div>
+          <label class="check hidden" id="iEmailUnlockWrap" style="margin-top:6px"><input type="checkbox" id="iEmailUnlock"> Alterar data de envio do e-mail</label></div>
+        <div class="field"><label for="iLocal">Local/Filial</label><input id="iLocal" list="dlLocal" autocomplete="off"></div>
+        <div class="field"><label for="iResp">Responsável</label><input id="iResp" list="dlResp" autocomplete="off"></div>
+        <div class="field"><label for="iTipo">Tipo de incidente</label><input id="iTipo" list="dlTipo" autocomplete="off"></div>
+        <div class="field"><label for="iPrazo">Prazo (dias úteis)</label><input type="number" id="iPrazo" min="1" max="60" value="4"></div>
+        <div class="calc-box" id="iCalc"></div>
+        <div class="field full"><label for="iObs">Observação</label><textarea id="iObs" rows="2"></textarea></div>
+        <div class="field"><label for="iStatus">Status</label>
+          <select id="iStatus"><option value="pendente">Pendente</option><option value="postergado">Postergado</option><option value="liberado">Liberado no Fluig</option></select></div>
+
+        <fieldset class="extra hidden" id="iLibSet"><legend>Liberação no Fluig</legend>
+          <div class="field"><label class="req" for="iLibData">Data da liberação</label><input type="date" id="iLibData"></div>
+          <div class="field"><label for="iFluig">Nº/código do Fluig</label><input id="iFluig"></div>
+          <div class="field full"><label for="iLibObs">Observação da liberação</label><input id="iLibObs"></div>
+        </fieldset>
+        <fieldset class="extra hidden" id="iPostSet"><legend>Postergação</legend>
+          <div class="field full"><label class="req" for="iPostMotivo">Motivo</label><input id="iPostMotivo"></div>
+          <div class="field"><label for="iPostData">Data da postergação</label><input type="date" id="iPostData"></div>
+          <div class="field"><label class="req" for="iPostNova">Nova data prevista</label><input type="date" id="iPostNova"></div>
+          <div class="field full"><label for="iPostObs">Observação da postergação</label><input id="iPostObs"></div>
+        </fieldset>
+      </div>
+    </div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Salvar</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Liberar no Fluig ===== -->
+<dialog id="dlgLiberar" class="small">
+  <form class="dlg" id="formLiberar" novalidate>
+    <div class="dlg-head"><h2>Liberar no Fluig</h2><p id="libResumo"></p></div>
+    <div class="dlg-body"><div class="form-grid">
+      <div class="field"><label class="req" for="lData">Data da liberação</label><input type="date" id="lData"></div>
+      <div class="field"><label for="lFluig">Nº/código do Fluig</label><input id="lFluig"></div>
+      <div class="field full"><label for="lObs">Observação</label><textarea id="lObs" rows="2"></textarea></div>
+    </div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Liberar</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Registrar envio do e-mail ===== -->
+<dialog id="dlgEmail" class="small">
+  <form class="dlg" id="formEmail" novalidate>
+    <div class="dlg-head"><h2>Registrar envio do e-mail</h2><p id="eResumo"></p></div>
+    <div class="dlg-body"><div class="form-grid">
+      <div class="field full"><label class="req" for="eData">Data de envio do e-mail</label><input type="date" id="eData"></div>
+      <div class="calc-box" id="eCalc"></div>
+    </div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Registrar e iniciar prazo</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Postergar ===== -->
+<dialog id="dlgPostergar" class="small">
+  <form class="dlg" id="formPostergar" novalidate>
+    <div class="dlg-head"><h2>Postergar incidente</h2><p id="postResumo"></p></div>
+    <div class="dlg-body"><div class="form-grid">
+      <div class="field full"><label class="req" for="pMotivo">Motivo</label><input id="pMotivo"></div>
+      <div class="field"><label for="pData">Data da postergação</label><input type="date" id="pData"></div>
+      <div class="field"><label class="req" for="pNova">Nova data prevista</label><input type="date" id="pNova"></div>
+      <div class="field full"><label for="pObs">Observação</label><textarea id="pObs" rows="2"></textarea></div>
+    </div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Postergar</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Senha ===== -->
+<dialog id="dlgPin" class="small">
+  <form class="dlg" id="formPin" novalidate>
+    <div class="dlg-head"><h2>Entrar para editar</h2><p>Informe a senha de edição definida no script.</p></div>
+    <div class="dlg-body"><div class="field"><label for="pinInput">Senha</label><input type="password" id="pinInput" autocomplete="current-password"></div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Entrar</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Confirmação ===== -->
+<dialog id="dlgConfirm" class="small">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="cTitle">Excluir registro</h2></div>
+    <div class="dlg-body"><p id="cMsg" style="margin:0"></p></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="button" class="btn danger" id="cOk">Excluir</button></div>
+  </div>
+</dialog>
+
+<!-- ===== Feriados e configurações ===== -->
+<dialog id="dlgSettings">
+  <div class="dlg">
+    <div class="dlg-head"><h2>Feriados e configurações</h2><p>Feriados cadastrados não contam como dias úteis.</p></div>
+    <div class="dlg-body">
+      <div class="section-title">Prazo</div>
+      <div class="row-inline">
+        <div class="field" style="max-width:180px"><label for="sPrazo">Prazo padrão (dias úteis)</label><input type="number" id="sPrazo" min="1" max="60"></div>
+        <label class="check" style="padding-bottom:8px"><input type="checkbox" id="sContarEnvio"> Contar o próprio dia do envio do e-mail como 1º dia útil</label>
+      </div>
+      <div class="note" id="sExemplo"></div>
+
+      <div class="section-title">Cadastrar feriado</div>
+      <div class="row-inline">
+        <div class="field" style="flex:0 1 170px"><label for="hData">Data</label><input type="date" id="hData"></div>
+        <div class="field"><label for="hNome">Nome do feriado</label><input id="hNome" placeholder="Ex.: Aniversário da cidade"></div>
+        <button class="btn primary" id="hAdd" type="button">Adicionar</button>
+      </div>
+      <div class="row-inline" style="margin-top:10px">
+        <div class="field" style="flex:0 1 110px"><label for="hAno">Ano</label><input type="number" id="hAno" min="2000" max="2100"></div>
+        <label class="check" style="padding-bottom:8px"><input type="checkbox" id="hFacult"> Incluir Carnaval e Corpus Christi</label>
+        <button class="btn" id="hNacionais" type="button">Adicionar feriados nacionais do ano</button>
+      </div>
+
+      <div class="section-title">Feriados cadastrados <span class="tab-n" id="hCount"></span></div>
+      <div class="list" id="hList"></div>
+    </div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Fechar</button><button type="button" class="btn primary" id="sSave">Salvar configurações</button></div>
+  </div>
+</dialog>
+
+<!-- ===== Importação ===== -->
+<dialog id="dlgImport" class="wide">
+  <div class="dlg">
+    <div class="dlg-head"><h2>Importar planilha</h2><p>Escolha seu arquivo .xlsx de Controle de Incidentes. Você confere as colunas antes de importar.</p></div>
+    <div class="dlg-body">
+      <div id="impStep1">
+        <label class="drop" id="impDrop" for="impFile">
+          <strong>Clique para escolher o arquivo</strong><br>ou arraste a planilha para cá (.xlsx, .xls, .csv)
+        </label>
+        <input type="file" id="impFile" accept=".xlsx,.xls,.xlsm,.csv" class="hidden">
+      </div>
+      <div id="impStep2" class="hidden">
+        <div class="section-title">Abas encontradas</div>
+        <div class="radio-list" id="impSheets"></div>
+        <div class="section-title">Correspondência das colunas</div>
+        <div class="map-grid" id="impMap"></div>
+        <label class="check" style="margin-top:12px"><input type="checkbox" id="impDup" checked> Ignorar linhas que já existem no aplicativo (mesmas datas, local e responsável)</label>
+        <div class="section-title">Prévia</div>
+        <div class="preview" id="impPreview"></div>
+        <div class="note" id="impSummary"></div>
+      </div>
+    </div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="button" class="btn primary hidden" id="impGo">Importar</button></div>
+  </div>
+</dialog>
+
+<!-- ===== Exportação ===== -->
+<dialog id="dlgExport" class="small">
+  <div class="dlg">
+    <div class="dlg-head"><h2>Exportar para Excel</h2></div>
+    <div class="dlg-body"><div class="radio-list" id="expScopes"></div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="button" class="btn primary" id="expGo">Baixar .xlsx</button></div>
+  </div>
+</dialog>
+
+<datalist id="dlLocal"></datalist><datalist id="dlResp"></datalist><datalist id="dlTipo"></datalist>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAct" class="hidden"></button></div>
+<div class="loading hidden" id="loading"><div class="spinner" aria-label="Carregando"></div></div>
+<!-- Dados enviados pelo Google junto com a página (no GitHub fica vazio) -->
+<script type="application/json" id="ci-initial"><?!= inicial ?></script>
+<script>
+  /* Link do App da Web do Google Apps Script (usado quando a página é aberta pelo GitHub) */
+  window.CI_API_URL = "https://script.google.com/a/macros/univale.com/s/AKfycbxttxZln0TeeR3Qg6Y_ljvoN_1c7Dj0mA90V6gP8_8ok8cHZymgbqsDtIar21dpeI-vkw/exec";
+</script>
+<script>
+/* =========================================================
+   Controle de Incidentes — lógica do aplicativo
+   Os dados SEMPRE ficam na planilha Google (Code.gs):
+   • Aberto pelo link do Google → usa google.script.run
+   • Aberto pelo GitHub → usa a API do mesmo script (window.CI_API_URL)
+   • Sem nenhum dos dois → modo de teste local no navegador
+   ========================================================= */
+'use strict';
+
+/* ---------------- Utilidades de data (sempre 'AAAA-MM-DD') ---------------- */
+const pad = n => String(n).padStart(2, '0');
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseISO = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const todayISO = () => toISO(new Date());
+const addDays = (iso, n) => { const d = parseISO(iso); d.setDate(d.getDate() + n); return toISO(d); };
+const fmtBR = s => (s ? `${s.slice(8, 10)}/${s.slice(5, 7)}/${s.slice(0, 4)}` : '—');
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const fmtMes = ym => `${MESES[Number(ym.slice(5, 7)) - 1]}/${ym.slice(0, 4)}`;
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const newId = () => 'inc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+const $ = id => document.getElementById(id);
+
+/* ---------------- Estado ---------------- */
+const state = {
+  incidents: [],
+  holidays: [],               // [{data:'2026-10-12', nome:'...'}]
+  settings: { prazoPadrao: 4, contarDiaEnvio: false },
+  view: 'pendentes',
+  search: '',
+  filters: { mesBase: 'dataIncidente', mes: '', local: '', resp: '', tipo: '', sit: '' },
+  sort: { key: null, dir: 1 },
+  today: todayISO(),
+  pinRequired: false,
+  canEdit: true,
+  pin: '',
+  busy: 0,
+};
+let holidaySet = new Set();
+const refreshHolidaySet = () => { holidaySet = new Set(state.holidays.map(h => h.data)); };
+
+/* ---------------- Armazenamento ---------------- */
+const IS_GAS = typeof google !== 'undefined' && google.script && google.script.run;
+const API_URL = !IS_GAS && typeof window.CI_API_URL === 'string' && /^https:\/\/script\.google\.com\//.test(window.CI_API_URL) ? window.CI_API_URL : '';
+const MODE = IS_GAS ? 'gas' : API_URL ? 'api' : 'local';
+const gas = (fn, ...args) => new Promise((res, rej) => {
+  google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args);
+});
+async function api(fn, ...args) {
+  let r;
+  try {
+    r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }), redirect: 'follow' });
+  } catch (e) {
+    throw new Error('Sem acesso ao script do Google. Confira se a implantação está como "Qualquer pessoa".');
+  }
+  let j;
+  try { j = await r.json(); } catch (e) { throw new Error('O Google pediu login. A implantação precisa estar como "Qualquer pessoa" para funcionar pelo GitHub.'); }
+  if (!j.ok) throw new Error(j.error || 'Erro no script do Google.');
+  return j.data;
+}
+const remote = (fn, ...args) => (MODE === 'gas' ? gas(fn, ...args) : api(fn, ...args));
+const ls = {
+  get(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { toast('Não foi possível gravar no navegador.', true); } },
+};
+const Store = MODE !== 'local' ? {
+  load: () => remote('apiLoad'),
+  checkPin: pin => remote('apiCheckPin', pin),
+  saveIncident: inc => remote('apiSaveIncident', inc, state.pin),
+  deleteIncident: id => remote('apiDeleteIncident', id, state.pin),
+  importIncidents: list => remote('apiImport', list, state.pin),
+  saveHolidays: list => remote('apiSaveHolidays', list, state.pin),
+  saveSettings: s => remote('apiSaveSettings', s, state.pin),
+} : {
+  checkPin: async () => true,
+  load: async () => ({ incidents: ls.get('ci_incidents', []), holidays: ls.get('ci_holidays', []), settings: ls.get('ci_settings', null) }),
+  saveIncident: async inc => {
+    const list = ls.get('ci_incidents', []); const i = list.findIndex(x => x.id === inc.id);
+    if (i >= 0) list[i] = inc; else list.push(inc);
+    ls.set('ci_incidents', list); return inc;
+  },
+  deleteIncident: async id => { ls.set('ci_incidents', ls.get('ci_incidents', []).filter(x => x.id !== id)); return true; },
+  importIncidents: async arr => { ls.set('ci_incidents', ls.get('ci_incidents', []).concat(arr)); return arr.length; },
+  saveHolidays: async list => { ls.set('ci_holidays', list); return true; },
+  saveSettings: async s => { ls.set('ci_settings', s); return true; },
+};
+
+async function persist(promise, errMsg) {
+  state.busy++;
+  try { return await promise; }
+  catch (e) {
+    console.error(e);
+    const msg = String((e && e.message) || '');
+    if (/senha/i.test(msg)) { state.pin = ''; ss.del('ci_pin'); state.canEdit = !state.pinRequired; }
+    toast((errMsg || 'Falha ao salvar.') + ' ' + (msg || '') + ' Os dados foram recarregados.', true);
+    state.busy--; await loadAll(false); state.busy++;
+    return null;
+  } finally { state.busy--; }
+}
+const ss = {
+  get(k) { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } },
+  set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* ignora */ } },
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) { /* ignora */ } },
+};
+
+/* ---------------- Regras de prazo ---------------- */
+function isBusiness(iso) {
+  const w = parseISO(iso).getDay();
+  return w !== 0 && w !== 6 && !holidaySet.has(iso);
+}
+/* Data limite = data de envio do e-mail + N dias úteis.
+   Padrão: o dia do envio não conta (a contagem começa no próximo dia útil).
+   Configurável em Feriados → "Contar o próprio dia do envio". */
+function calcLimite(email, prazo) {
+  if (!email) return '';
+  let n = Math.max(1, Number(prazo) || state.settings.prazoPadrao || 4);
+  let cur = email;
+  if (state.settings.contarDiaEnvio && isBusiness(email)) { n--; if (n === 0) return email; }
+  let guard = 0;
+  while (n > 0 && guard++ < 4000) { cur = addDays(cur, 1); if (isBusiness(cur)) n--; }
+  return cur;
+}
+/* dias úteis no intervalo (de, até] */
+function businessBetween(from, to) {
+  if (!from || !to || to <= from) return 0;
+  let c = 0, cur = from, guard = 0;
+  while (cur < to && guard++ < 4000) { cur = addDays(cur, 1); if (isBusiness(cur)) c++; }
+  return c;
+}
+function diasDecorridos(email, ate) {
+  if (!email || !ate || ate < email) return 0;
+  return businessBetween(email, ate) + (state.settings.contarDiaEnvio && isBusiness(email) ? 1 : 0);
+}
+
+const SIT = {
+  atrasado: { label: 'Atrasado', icon: '🔴' },
+  hoje: { label: 'Liberar hoje', icon: '🟠' },
+  emdia: { label: 'Em dia', icon: '🟢' },
+  semdata: { label: 'Aguardando e-mail', icon: '✉️' },
+  postergado: { label: 'Postergado', icon: '⏸' },
+  tratar: { label: 'Tratar postergado', icon: '⏰' },
+  liberado: { label: 'Liberado', icon: '✅' },
+};
+const SIT_ORDER = { atrasado: 0, tratar: 0, hoje: 1, emdia: 2, semdata: 3, postergado: 4, liberado: 5 };
+
+function info(inc) {
+  const t = state.today;
+  const limite = calcLimite(inc.dataEmail, inc.prazo);
+  const r = { limite, dias: diasDecorridos(inc.dataEmail, t), sit: 'semdata', sub: '' };
+  if (inc.status === 'liberado') {
+    r.sit = 'liberado';
+    r.dias = diasDecorridos(inc.dataEmail, inc.dataLiberacao || t);
+    if (limite && inc.dataLiberacao) r.noPrazo = inc.dataLiberacao <= limite;
+    r.sub = r.noPrazo === undefined ? '' : (r.noPrazo ? 'no prazo' : 'fora do prazo');
+    return r;
+  }
+  if (inc.status === 'postergado') {
+    if (inc.novaData && t >= inc.novaData) {
+      r.sit = 'tratar';
+      r.sub = t === inc.novaData ? 'nova data é hoje' : `nova data era ${fmtBR(inc.novaData)}`;
+    } else { r.sit = 'postergado'; r.sub = inc.novaData ? `até ${fmtBR(inc.novaData)}` : ''; }
+    return r;
+  }
+  if (!limite) { r.sub = 'prazo começa no envio do e-mail'; return r; }
+  if (t < limite) { r.sit = 'emdia'; const f = businessBetween(t, limite); r.sub = f === 1 ? 'falta 1 dia útil' : `faltam ${f} dias úteis`; }
+  else if (t === limite) { r.sit = 'hoje'; r.sub = 'último dia do prazo'; }
+  else { r.sit = 'atrasado'; const a = businessBetween(limite, t); r.sub = a ? `${plural(a, 'dia útil', 'dias úteis')} de atraso` : 'prazo vencido'; }
+  return r;
+}
+function actionsFor(inc) {
+  if (state.view === 'pendentes' && !inc.dataEmail)
+    return [['email', 'Registrar e-mail', 'go'], ['postergar', 'Postergar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']];
+  return VIEWS[state.view].actions;
+}
+function actionsHtml(inc) {
+  const list = actionsFor(inc);
+  const main = list.find(a => a[2] === 'go');
+  return (main ? `<button class="act go" data-act="${main[0]}">${main[1]}</button>` : '') +
+    `<button class="act more" data-more="1" title="Mais ações" aria-haspopup="menu">⋯</button>`;
+}
+function openRowMenu(btn, id) {
+  const inc = byId(id); if (!inc) return;
+  const items = actionsFor(inc).filter(a => a[2] !== 'go');
+  const m = $('rowMenu');
+  m.innerHTML = items.map(([a, t, c]) => (c === 'del' ? '<hr>' : '') + `<button role="menuitem" class="${c || ''}" data-mact="${a}" data-id="${esc(id)}">${t}</button>`).join('');
+  m.classList.remove('hidden');
+  const r = btn.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w)) + 'px';
+  m.style.top = (r.bottom + h + 8 > window.innerHeight ? r.top - h - 6 : r.bottom + 6) + 'px';
+  m.querySelector('button')?.focus({ preventScroll: true });
+}
+const closeRowMenu = () => $('rowMenu').classList.add('hidden');
+const viewOf = inc => inc.status === 'liberado' ? 'liberados' : inc.status === 'postergado' ? 'postergados' : 'pendentes';
+const pill = (key, sub) => `<span class="sitw"><span class="pill ${key}"><span class="ico">${SIT[key].icon} </span>${SIT[key].label}</span>${sub ? `<span class="sub">${esc(sub)}</span>` : ''}</span>`;
+
+/* ---------------- Colunas por aba ---------------- */
+const C = {
+  dataIncidente: { t: 'Data incidente', cls: 'date', v: i => i.dataIncidente, h: i => fmtBR(i.dataIncidente) },
+  dataEmail: { t: 'Envio e-mail', cls: 'date', v: i => i.dataEmail, h: i => fmtBR(i.dataEmail) },
+  local: { t: 'Local / Tipo', cls: 'strong', v: i => norm(i.local), h: i => (esc(i.local) || '—') + (i.tipo ? `<span class="sub">${esc(i.tipo)}</span>` : '') },
+  responsavel: { t: 'Responsável', v: i => norm(i.responsavel), h: i => esc(i.responsavel) || '—' },
+  tipo: { t: 'Tipo', v: i => norm(i.tipo), h: i => esc(i.tipo) || '—' },
+  prazo: { t: 'Prazo', cls: 'num', v: i => Number(i.prazo) || 0, h: i => `<span title="dias úteis">${i.prazo || state.settings.prazoPadrao}</span>` },
+  limite: { t: 'Data limite', cls: 'date', v: (i, x) => x.limite, h: (i, x) => `<b>${fmtBR(x.limite)}</b>` },
+  dias: { t: 'Dias', cls: 'num', v: (i, x) => x.dias, h: (i, x) => (i.dataEmail ? x.dias : '—') },
+  sit: { t: 'Situação', cls: 'wide', v: (i, x) => SIT_ORDER[x.sit] * 1e9 + (x.limite ? Number(x.limite.replace(/-/g, '')) : 99999999), h: (i, x) => pill(x.sit, x.sub) },
+  observacao: { t: 'Observação', cls: 'obs', v: i => norm(i.observacao), h: i => esc(i.observacao) || '<span class="dim">—</span>' },
+  motivoPost: { t: 'Motivo', cls: 'obs', v: i => norm(i.motivoPost), h: i => esc(i.motivoPost) || '—' },
+  dataPost: { t: 'Postergado em', cls: 'date', v: i => i.dataPost, h: i => fmtBR(i.dataPost) },
+  novaData: { t: 'Nova data', cls: 'date', v: i => i.novaData, h: i => `<b>${fmtBR(i.novaData)}</b>` },
+  dataLiberacao: { t: 'Liberado em', cls: 'date', v: i => i.dataLiberacao, h: i => fmtBR(i.dataLiberacao) },
+  fluig: { t: 'Nº Fluig', v: i => norm(i.fluig), h: i => esc(i.fluig) || '—' },
+  diasLib: { t: 'Dias até liberar', cls: 'num', v: (i, x) => x.dias, h: (i, x) => (i.dataEmail && i.dataLiberacao ? x.dias : '—') },
+  noPrazo: { t: 'Situação', cls: 'wide', v: (i, x) => (x.noPrazo ? 0 : 1), h: (i, x) => pill('liberado', x.sub) },
+};
+const VIEWS = {
+  pendentes: {
+    cols: ['dataIncidente', 'dataEmail', 'local', 'responsavel', 'prazo', 'limite', 'dias', 'sit', 'observacao'],
+    sort: { key: 'sit', dir: 1 },
+    actions: [['liberar', 'Liberar no Fluig', 'go'], ['postergar', 'Postergar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
+    sits: ['atrasado', 'hoje', 'emdia', 'semdata'],
+  },
+  postergados: {
+    cols: ['dataIncidente', 'dataEmail', 'local', 'responsavel', 'motivoPost', 'dataPost', 'novaData', 'sit', 'observacao'],
+    sort: { key: 'novaData', dir: 1 },
+    actions: [['liberar', 'Liberar no Fluig', 'go'], ['retomar', 'Retomar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
+    sits: ['tratar', 'postergado'],
+  },
+  liberados: {
+    cols: ['dataIncidente', 'dataEmail', 'local', 'responsavel', 'limite', 'dataLiberacao', 'fluig', 'diasLib', 'noPrazo', 'observacao'],
+    sort: { key: 'dataLiberacao', dir: -1 },
+    actions: [['reabrir', 'Reabrir'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
+    sits: [],
+  },
+};
+
+/* ---------------- Filtros ---------------- */
+function filtered(view = state.view, applyFilters = true) {
+  const f = state.filters; const q = norm(state.search);
+  return state.incidents.filter(i => viewOf(i) === view).filter(i => {
+    if (!applyFilters) return true;
+    if (f.mes) { const d = i[f.mesBase]; if (!d || d.slice(0, 7) !== f.mes) return false; }
+    if (f.local && i.local !== f.local) return false;
+    if (f.resp && i.responsavel !== f.resp) return false;
+    if (f.tipo && i.tipo !== f.tipo) return false;
+    if (f.sit && info(i).sit !== f.sit) return false;
+    if (q) {
+      const hay = norm([i.local, i.responsavel, i.tipo, i.observacao, i.fluig, i.obsLiberacao, i.motivoPost, i.obsPost,
+        fmtBR(i.dataIncidente), fmtBR(i.dataEmail), fmtBR(i.dataLiberacao)].join(' | '));
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+const uniq = key => [...new Set(state.incidents.map(i => i[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+function fillSelect(sel, opts, value, allLabel) {
+  sel.innerHTML = `<option value="">${allLabel}</option>` + opts.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('');
+  sel.value = opts.some(([v]) => v === value) ? value : '';
+}
+function renderFilters() {
+  const f = state.filters;
+  const meses = new Set(state.incidents.map(i => (i[f.mesBase] || '').slice(0, 7)).filter(Boolean));
+  meses.add(state.today.slice(0, 7));
+  fillSelect($('fMes'), [...meses].sort().reverse().map(m => [m, fmtMes(m)]), f.mes, 'Todos os meses');
+  fillSelect($('fLocal'), uniq('local').map(v => [v, v]), f.local, 'Todos');
+  fillSelect($('fResp'), uniq('responsavel').map(v => [v, v]), f.resp, 'Todos');
+  fillSelect($('fTipo'), uniq('tipo').map(v => [v, v]), f.tipo, 'Todos');
+  fillSelect($('fSit'), VIEWS[state.view].sits.map(k => [k, `${SIT[k].icon} ${SIT[k].label}`]), f.sit, 'Todas');
+  $('fSit').disabled = !VIEWS[state.view].sits.length;
+  $('fMesBase').value = f.mesBase;
+  f.mes = $('fMes').value; f.local = $('fLocal').value; f.resp = $('fResp').value; f.tipo = $('fTipo').value; f.sit = $('fSit').value;
+  const n = ['mes', 'local', 'resp', 'tipo', 'sit'].filter(k => f[k]).length;
+  $('filterBadge').textContent = n; $('filterBadge').classList.toggle('hidden', !n);
+  ['dlLocal:local', 'dlResp:responsavel', 'dlTipo:tipo'].forEach(p => {
+    const [id, key] = p.split(':'); $(id).innerHTML = uniq(key).map(v => `<option value="${esc(v)}">`).join('');
+  });
+}
+
+/* ---------------- Renderização ---------------- */
+function render() {
+  refreshHolidaySet();
+  renderFilters();
+  const pend = state.incidents.filter(i => viewOf(i) === 'pendentes').map(info);
+  const cnt = k => pend.filter(x => x.sit === k).length;
+  const post = state.incidents.filter(i => viewOf(i) === 'postergados');
+  const tratar = post.filter(i => info(i).sit === 'tratar').length;
+
+  $('nPend').textContent = pend.length; $('nPost').textContent = post.length;
+  $('nLib').textContent = state.incidents.filter(i => i.status === 'liberado').length;
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === state.view)));
+
+  const isPend = state.view === 'pendentes';
+  $('counters').classList.toggle('hidden', !isPend);
+  $('counters').innerHTML = [['atrasado', 'late', 'Atrasados', 'Atrasado'], ['hoje', 'today', 'Liberar hoje', 'Liberar hoje'], ['emdia', 'ok', 'Em dia', 'Em dia'], ['semdata', 'wait', 'Aguardando e-mail', 'Aguardando e-mail']]
+    .map(([k, cls, p, s]) => { const n = cnt(k); return `<button class="stat ${cls} ${n ? '' : 'zero'} ${state.filters.sit === k ? 'active' : ''}" data-sit="${k}" title="Filtrar: ${SIT[k].label}" aria-pressed="${state.filters.sit === k}"><span class="stat-n">${n}</span><span class="stat-l">${SIT[k].icon} ${n === 1 ? s : p}</span></button>`; }).join('');
+
+  const al = $('alertPost');
+  al.classList.toggle('hidden', !(tratar && state.view !== 'postergados'));
+  al.innerHTML = `<span>⏰ ${tratar === 1 ? 'Existe 1 pendência postergada' : `Existem ${tratar} pendências postergadas`} com a nova data prevista atingida.</span><button class="btn" data-goto="postergados">Ver postergados</button>`;
+
+  const V = VIEWS[state.view];
+  const sort = state.sort.key ? state.sort : V.sort;
+  const rows = filtered().map(i => ({ i, x: info(i) }));
+  const col = C[sort.key];
+  rows.sort((a, b) => {
+    const va = col.v(a.i, a.x), vb = col.v(b.i, b.x);
+    const ea = va === '' || va == null, eb = vb === '' || vb == null;
+    if (ea !== eb) return ea ? 1 : -1;
+    return (va > vb ? 1 : va < vb ? -1 : 0) * sort.dir;
+  });
+
+  $('grid').querySelector('thead').innerHTML = '<tr>' + V.cols.map(k =>
+    `<th data-sort="${k}" scope="col">${C[k].t}${sort.key === k ? `<span class="arrow">${sort.dir > 0 ? '▲' : '▼'}</span>` : ''}</th>`).join('') +
+    (state.canEdit ? '<th class="nosort" scope="col">Ações</th>' : '') + '</tr>';
+
+  $('grid').querySelector('tbody').innerHTML = rows.map(({ i, x }) =>
+    `<tr class="s-${x.sit}" data-id="${esc(i.id)}">` +
+    V.cols.map(k => `<td class="${C[k].cls || ''}" data-label="${C[k].t}">${C[k].h(i, x)}</td>`).join('') +
+    (state.canEdit ? `<td class="cell-actions"><div class="actions">${actionsHtml(i)}</div></td>` : '') + '</tr>'
+  ).join('');
+
+  const total = filtered(state.view, false).length;
+  const empty = $('empty');
+  empty.classList.toggle('hidden', rows.length > 0);
+  $('grid').classList.toggle('hidden', rows.length === 0);
+  if (!rows.length) {
+    if (total) empty.innerHTML = `<span class="em-ico">🔎</span><strong>Nenhum registro com esses filtros</strong>Ajuste a pesquisa ou <button class="btn" data-clear style="margin-left:6px">limpe os filtros</button>`;
+    else if (isPend) empty.innerHTML = `<span class="em-ico">✅</span><strong>Nenhuma pendência</strong>Tudo liberado. Use “+ Novo incidente” para lançar o próximo ou importe sua planilha.`;
+    else if (state.view === 'postergados') empty.innerHTML = '<span class="em-ico">⏸</span><strong>Nenhum incidente postergado</strong>Use “Postergar” na aba Pendentes quando precisar adiar uma análise.';
+    else empty.innerHTML = '<span class="em-ico">📁</span><strong>Nenhum incidente liberado ainda</strong>Ao liberar no Fluig, o registro sai de Pendentes e aparece aqui.';
+  }
+
+  const d = parseISO(state.today);
+  $('todayInfo').textContent = `${d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}${isBusiness(state.today) ? '' : ' (não útil)'}`;
+  $('storageInfo').textContent = MODE === 'local' ? 'Modo de teste: dados só neste navegador (configure CI_API_URL)' : 'Dados compartilhados na planilha Google • atualiza a cada minuto';
+  ['btnNew', 'btnImport', 'btnSettings'].forEach(id => $(id).classList.toggle('hidden', !state.canEdit));
+  $('btnLock').classList.toggle('hidden', !state.pinRequired);
+  $('btnLock').innerHTML = state.canEdit ? '🔓 <span class="lbl">Sair da edição</span>' : '🔒 <span class="lbl">Entrar para editar</span>';
+  $('modeInfo').classList.toggle('hidden', state.canEdit);
+}
+
+/* ---------------- Ações da tabela ---------------- */
+const byId = id => state.incidents.find(i => i.id === id);
+const resumo = i => [fmtBR(i.dataIncidente), i.local, i.responsavel].filter(Boolean).join(' • ');
+
+async function upsert(inc, msg, undoPrev) {
+  inc.atualizadoEm = new Date().toISOString();
+  const idx = state.incidents.findIndex(x => x.id === inc.id);
+  if (idx >= 0) state.incidents[idx] = inc; else state.incidents.push(inc);
+  render();
+  if (msg) toast(msg, false, undoPrev ? ['Desfazer', () => upsert(undoPrev, 'Alteração desfeita.')] : null);
+  await persist(Store.saveIncident(inc));
+}
+
+function onTableAction(act, id) {
+  const inc = byId(id); if (!inc) return;
+  if (act === 'editar') return openIncident(inc);
+  if (act === 'liberar') return openLiberar(inc);
+  if (act === 'email') return openEmail(inc);
+  if (act === 'postergar') return openPostergar(inc);
+  if (act === 'excluir') return confirmDelete(inc);
+  if (act === 'retomar') return upsert({ ...inc, status: 'pendente' }, 'Incidente retomado e devolvido para Pendentes.', { ...inc });
+  if (act === 'reabrir') return upsert({ ...inc, status: 'pendente', dataLiberacao: '', fluig: '', obsLiberacao: '' }, 'Incidente reaberto em Pendentes.', { ...inc });
+}
+
+function confirmDelete(inc) {
+  $('cMsg').textContent = 'Tem certeza que deseja excluir este registro? Essa ação não poderá ser desfeita.';
+  $('cTitle').textContent = `Excluir registro${resumo(inc) ? ' – ' + resumo(inc) : ''}`;
+  $('cOk').onclick = async () => {
+    $('dlgConfirm').close();
+    state.incidents = state.incidents.filter(x => x.id !== inc.id);
+    render(); toast('Registro excluído.');
+    await persist(Store.deleteIncident(inc.id), 'Falha ao excluir.');
+  };
+  $('dlgConfirm').showModal();
+}
+
+/* ---------------- Formulário de incidente ---------------- */
+let editing = null;
+function openIncident(inc) {
+  editing = inc || null;
+  const v = inc || { dataIncidente: '', dataEmail: '', local: '', responsavel: '', tipo: '', prazo: state.settings.prazoPadrao, observacao: '', status: 'pendente' };
+  $('incTitle').textContent = inc ? 'Editar incidente' : 'Novo incidente';
+  $('iDataInc').value = v.dataIncidente || '';
+  $('iDataEmail').value = v.dataEmail || '';
+  $('iDataEmail').disabled = !!inc && !!v.dataEmail;
+  $('iEmailUnlockWrap').classList.toggle('hidden', !(inc && v.dataEmail));
+  $('iEmailUnlock').checked = false;
+  $('iLocal').value = v.local || ''; $('iResp').value = v.responsavel || ''; $('iTipo').value = v.tipo || '';
+  $('iPrazo').value = v.prazo || state.settings.prazoPadrao; $('iObs').value = v.observacao || '';
+  $('iStatus').value = v.status || 'pendente';
+  $('iLibData').value = v.dataLiberacao || ''; $('iFluig').value = v.fluig || ''; $('iLibObs').value = v.obsLiberacao || '';
+  $('iPostMotivo').value = v.motivoPost || ''; $('iPostData').value = v.dataPost || ''; $('iPostNova').value = v.novaData || ''; $('iPostObs').value = v.obsPost || '';
+  toggleStatusSets(); updateCalc();
+  $('dlgIncident').showModal();
+  setTimeout(() => (inc ? $('iLocal') : $('iDataInc')).focus(), 30);
+}
+function toggleStatusSets() {
+  const s = $('iStatus').value;
+  $('iLibSet').classList.toggle('hidden', s !== 'liberado');
+  $('iPostSet').classList.toggle('hidden', s !== 'postergado');
+  if (s === 'liberado' && !$('iLibData').value) $('iLibData').value = state.today;
+  if (s === 'postergado' && !$('iPostData').value) $('iPostData').value = state.today;
+}
+function updateCalc() {
+  refreshHolidaySet();
+  const email = $('iDataEmail').value, prazo = Number($('iPrazo').value) || state.settings.prazoPadrao;
+  const box = $('iCalc');
+  if (!email) { box.innerHTML = `<span>${pill('semdata')}</span><span>Sem data de envio do e-mail o registro fica aguardando. O prazo de ${prazo} dias úteis começa quando você registrar o envio.</span>`; return; }
+  const tmp = { dataEmail: email, prazo, status: 'pendente' };
+  const x = info(tmp);
+  box.innerHTML = `<span>Data limite: <b>${fmtBR(x.limite)}</b></span><span>Dias úteis decorridos: <b>${x.dias}</b></span><span>${pill(x.sit)}</span>` +
+    ($('iDataInc').value && $('iDataInc').value > email ? '<span style="color:var(--today)">Atenção: e-mail anterior à data do incidente.</span>' : '');
+}
+function submitIncident(e) {
+  e.preventDefault();
+  const g = id => $(id).value.trim();
+  const req = [['iDataInc', 'a data do incidente']];
+  const s = g('iStatus');
+  if (s === 'liberado') req.push(['iLibData', 'a data da liberação']);
+  if (s === 'postergado') req.push(['iPostMotivo', 'o motivo da postergação'], ['iPostNova', 'a nova data prevista']);
+  for (const [id, nome] of req) {
+    if (!g(id) && !(id === 'iDataEmail' && $(id).disabled)) { toast(`Informe ${nome}.`, true); $(id).focus(); return; }
+  }
+  const base = editing ? { ...editing } : { id: newId(), criadoEm: new Date().toISOString() };
+  const inc = Object.assign(base, {
+    dataIncidente: g('iDataInc'),
+    local: g('iLocal'), responsavel: g('iResp'), tipo: g('iTipo'),
+    prazo: Math.max(1, parseInt(g('iPrazo'), 10) || state.settings.prazoPadrao),
+    observacao: g('iObs'), status: s,
+    dataLiberacao: g('iLibData'), fluig: g('iFluig'), obsLiberacao: g('iLibObs'),
+    motivoPost: g('iPostMotivo'), dataPost: g('iPostData'), novaData: g('iPostNova'), obsPost: g('iPostObs'),
+  });
+  // A data do e-mail só muda na edição se o usuário marcar "Alterar data de envio do e-mail"
+  if (!editing || !$('iDataEmail').disabled) inc.dataEmail = g('iDataEmail');
+  if (s !== 'liberado') inc.dataLiberacao = '';
+  const prev = editing ? { ...editing } : null;
+  $('dlgIncident').close();
+  const destino = { pendente: 'Pendentes', postergado: 'Postergados', liberado: 'Liberados' }[s];
+  upsert(inc, editing ? 'Alterações salvas.' : `Incidente salvo em ${destino}.`, prev);
+}
+
+/* ---------------- Liberar / Postergar ---------------- */
+let actionTarget = null;
+function openLiberar(inc) {
+  actionTarget = inc;
+  $('libResumo').textContent = resumo(inc);
+  $('lData').value = state.today; $('lFluig').value = inc.fluig || ''; $('lObs').value = inc.obsLiberacao || '';
+  $('dlgLiberar').showModal(); setTimeout(() => $('lFluig').focus(), 30);
+}
+function submitLiberar(e) {
+  e.preventDefault();
+  if (!$('lData').value) { toast('Informe a data da liberação.', true); return; }
+  const prev = { ...actionTarget };
+  const inc = { ...actionTarget, status: 'liberado', dataLiberacao: $('lData').value, fluig: $('lFluig').value.trim(), obsLiberacao: $('lObs').value.trim() };
+  $('dlgLiberar').close();
+  upsert(inc, 'Liberado no Fluig e movido para Liberados.', prev);
+}
+function openEmail(inc) {
+  actionTarget = inc;
+  $('eResumo').textContent = resumo(inc);
+  $('eData').value = state.today; updateEmailCalc();
+  $('dlgEmail').showModal(); setTimeout(() => $('eData').focus(), 30);
+}
+function updateEmailCalc() {
+  const d = $('eData').value;
+  if (!d) { $('eCalc').innerHTML = '<span>Informe a data de envio.</span>'; return; }
+  const x = info({ dataEmail: d, prazo: actionTarget.prazo, status: 'pendente' });
+  $('eCalc').innerHTML = `<span>Liberar definitivo no Fluig até: <b>${fmtBR(x.limite)}</b></span><span>${pill(x.sit, x.sub)}</span>`;
+}
+function submitEmail(e) {
+  e.preventDefault();
+  if (!$('eData').value) { toast('Informe a data de envio do e-mail.', true); return; }
+  const prev = { ...actionTarget };
+  const inc = { ...actionTarget, dataEmail: $('eData').value };
+  $('dlgEmail').close();
+  upsert(inc, `E-mail registrado. Liberar no Fluig até ${fmtBR(calcLimite(inc.dataEmail, inc.prazo))}.`, prev);
+}
+function openPostergar(inc) {
+  actionTarget = inc;
+  $('postResumo').textContent = resumo(inc);
+  $('pMotivo').value = inc.motivoPost || ''; $('pData').value = state.today; $('pNova').value = ''; $('pObs').value = inc.obsPost || '';
+  $('pNova').min = state.today;
+  $('dlgPostergar').showModal(); setTimeout(() => $('pMotivo').focus(), 30);
+}
+function submitPostergar(e) {
+  e.preventDefault();
+  if (!$('pMotivo').value.trim()) { toast('Informe o motivo da postergação.', true); $('pMotivo').focus(); return; }
+  if (!$('pNova').value) { toast('Informe a nova data prevista.', true); $('pNova').focus(); return; }
+  const prev = { ...actionTarget };
+  const inc = { ...actionTarget, status: 'postergado', motivoPost: $('pMotivo').value.trim(), dataPost: $('pData').value || state.today, novaData: $('pNova').value, obsPost: $('pObs').value.trim() };
+  $('dlgPostergar').close();
+  upsert(inc, `Postergado até ${fmtBR(inc.novaData)}.`, prev);
+}
+
+/* ---------------- Feriados e configurações ---------------- */
+let draftHolidays = [];
+function openSettings() {
+  draftHolidays = state.holidays.map(h => ({ ...h }));
+  $('sPrazo').value = state.settings.prazoPadrao; $('sContarEnvio').checked = !!state.settings.contarDiaEnvio;
+  $('hAno').value = state.today.slice(0, 4); $('hData').value = ''; $('hNome').value = '';
+  renderHolidayList(); updateExemplo();
+  $('dlgSettings').showModal();
+}
+function renderHolidayList() {
+  draftHolidays.sort((a, b) => a.data.localeCompare(b.data));
+  $('hCount').textContent = draftHolidays.length ? `(${draftHolidays.length})` : '';
+  $('hList').innerHTML = draftHolidays.length ? draftHolidays.map((h, k) => {
+    const wd = parseISO(h.data).toLocaleDateString('pt-BR', { weekday: 'short' });
+    return `<div class="list-row"><span class="d">${fmtBR(h.data)}</span><span class="n">${esc(h.nome) || '—'} <span class="sub" style="display:inline">${wd}</span></span><button class="act del" data-hdel="${k}">Remover</button></div>`;
+  }).join('') : '<div class="list-empty">Nenhum feriado cadastrado. Fins de semana já não contam.</div>';
+}
+function updateExemplo() {
+  const keep = { ...state.settings }, keepSet = holidaySet;
+  state.settings = { prazoPadrao: Number($('sPrazo').value) || 4, contarDiaEnvio: $('sContarEnvio').checked };
+  holidaySet = new Set(draftHolidays.map(h => h.data));
+  const ex = '2026-09-28';
+  $('sExemplo').textContent = `Exemplo: e-mail enviado em 28/09/2026 (segunda) + ${state.settings.prazoPadrao} dias úteis → data limite ${fmtBR(calcLimite(ex, state.settings.prazoPadrao))}.`;
+  state.settings = keep; holidaySet = keepSet;
+}
+function easter(y) { // algoritmo de Meeus/Jones/Butcher
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+    g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4,
+    l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+    month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+  return `${y}-${pad(month)}-${pad(day)}`;
+}
+function addNacionais() {
+  const y = parseInt($('hAno').value, 10); if (!y) return;
+  const p = easter(y);
+  const list = [[`${y}-01-01`, 'Confraternização Universal'], [addDays(p, -2), 'Sexta-feira Santa'], [`${y}-04-21`, 'Tiradentes'],
+    [`${y}-05-01`, 'Dia do Trabalho'], [`${y}-09-07`, 'Independência do Brasil'], [`${y}-10-12`, 'Nossa Senhora Aparecida'],
+    [`${y}-11-02`, 'Finados'], [`${y}-11-15`, 'Proclamação da República'], [`${y}-11-20`, 'Dia Nacional de Zumbi e da Consciência Negra'],
+    [`${y}-12-25`, 'Natal']];
+  if ($('hFacult').checked) list.push([addDays(p, -48), 'Carnaval (segunda)'], [addDays(p, -47), 'Carnaval (terça)'], [addDays(p, 60), 'Corpus Christi']);
+  let n = 0;
+  list.forEach(([data, nome]) => { if (!draftHolidays.some(h => h.data === data)) { draftHolidays.push({ data, nome }); n++; } });
+  renderHolidayList(); updateExemplo();
+  toast(n ? `${plural(n, 'feriado adicionado', 'feriados adicionados')}. Clique em “Salvar configurações”.` : 'Esses feriados já estavam cadastrados.');
+}
+async function saveSettings() {
+  state.settings = { prazoPadrao: Math.max(1, parseInt($('sPrazo').value, 10) || 4), contarDiaEnvio: $('sContarEnvio').checked };
+  state.holidays = draftHolidays.map(h => ({ ...h }));
+  $('dlgSettings').close(); render(); toast('Configurações salvas. Prazos recalculados.');
+  showLoading(true);
+  await persist(Promise.all([Store.saveSettings(state.settings), Store.saveHolidays(state.holidays)]));
+  showLoading(false);
+}
+
+/* ---------------- Biblioteca de Excel (carregada só quando usada) ---------------- */
+let xlsxPromise = null;
+function loadXLSX() {
+  if (typeof XLSX !== 'undefined') return Promise.resolve();
+  if (!xlsxPromise) xlsxPromise = new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    sc.onload = () => res(); sc.onerror = () => { xlsxPromise = null; rej(new Error('xlsx')); };
+    document.head.appendChild(sc);
+  });
+  return xlsxPromise;
+}
+async function ensureXLSX() {
+  if (typeof XLSX !== 'undefined') return true;
+  showLoading(true);
+  try { await loadXLSX(); return true; }
+  catch (e) { toast('Não foi possível carregar a biblioteca de Excel. Verifique a conexão.', true); return false; }
+  finally { showLoading(false); }
+}
+
+/* ---------------- Importação ---------------- */
+const IMP_FIELDS = [
+  ['dataIncidente', 'Data do incidente', ['=data', 'data do incidente', 'data incidente', 'data da ocorrencia', 'data ocorrencia', 'data do acidente', 'ocorrencia']],
+  ['dataEmail', 'Data de envio do e-mail', ['envio', 'e-mail', 'email', 'data do e-mail', 'data e-mail', 'recebimento']],
+  ['local', 'Local/Filial', ['local', 'filial', 'unidade', 'loja', 'empresa', 'obra', 'setor']],
+  ['responsavel', 'Responsável', ['responsavel', 'colaborador', 'funcionario', 'nome', 'analista']],
+  ['tipo', 'Tipo de incidente', ['tipo', 'natureza', 'classificacao', 'categoria']],
+  ['prazo', 'Prazo (dias úteis)', ['=prazo', 'prazo (dias uteis)', 'prazo dias', 'dias uteis']],
+  ['observacao', 'Observação', ['observacao', 'observacoes', 'obs', 'comentario', 'descricao']],
+  ['status', 'Status', ['status', 'situacao', 'liberado?']],
+  ['dataLiberacao', 'Data da liberação', ['data da liberacao', 'data liberacao', 'liberado em', 'liberacao', 'data fluig']],
+  ['fluig', 'Nº/código do Fluig', ['fluig', 'n fluig', 'numero fluig', 'solicitacao', 'protocolo', 'codigo']],
+];
+const IMP_SKIP = ['data limite', 'limite', 'vencimento', 'dias decorridos', 'decorridos', 'dias restantes'];
+let imp = null;
+
+async function openImport() {
+  if (!(await ensureXLSX())) return;
+  imp = null; $('impFile').value = '';
+  $('impStep1').classList.remove('hidden'); $('impStep2').classList.add('hidden'); $('impGo').classList.add('hidden');
+  $('dlgImport').showModal();
+}
+async function readImportFile(file) {
+  if (!file) return;
+  try {
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const sheets = wb.SheetNames.map(name => analyzeSheet(wb.Sheets[name], name)).filter(s => s.data.length);
+    if (!sheets.length) { toast('Nenhuma linha com dados foi encontrada no arquivo.', true); return; }
+    const headers = [...new Set(sheets.flatMap(s => s.headers).filter(Boolean))];
+    imp = { file: file.name, sheets, headers, selected: new Set(sheets.map(s => s.name)), map: guessMap(headers) };
+    $('impStep1').classList.add('hidden'); $('impStep2').classList.remove('hidden'); $('impGo').classList.remove('hidden');
+    renderImport();
+  } catch (e) { console.error(e); toast('Não foi possível ler esse arquivo. Use .xlsx, .xls ou .csv.', true); }
+}
+function headerScore(row) {
+  return row.reduce((s, c) => { const n = norm(c); if (!n || n.length > 60) return s; return s + (IMP_FIELDS.some(([, , syn]) => syn.some(w => w[0] === '=' ? n === w.slice(1) : n.includes(w))) ? 1 : 0); }, 0);
+}
+function analyzeSheet(ws, name) {
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+  let hi = -1, best = 1;
+  for (let r = 0; r < Math.min(25, rows.length); r++) { const sc = headerScore(rows[r]); if (sc > best) { best = sc; hi = r; } }
+  if (hi < 0) return { name, headers: [], data: [], headerRow: 0 };
+  const headers = rows[hi].map(h => String(h).replace(/\s+/g, ' ').trim());
+  const data = rows.slice(hi + 1).filter(r => r.some(c => String(c).trim() !== ''));
+  return { name, headers, data, headerRow: hi + 1 };
+}
+function guessMap(headers) {
+  const used = new Set(), map = {};
+  const cands = headers.filter(h => !IMP_SKIP.some(s => norm(h).includes(s)));
+  IMP_FIELDS.forEach(([key, , syn]) => {
+    let best = null, bestSc = 0;
+    cands.forEach(h => {
+      if (used.has(h)) return; const n = norm(h);
+      syn.forEach((w, idx) => {
+        const exact = w[0] === '=' ? n === w.slice(1) : n === w;
+        const part = w[0] !== '=' && n.includes(w);
+        const sc = exact ? 100 - idx : part ? 50 - idx : 0;
+        if (sc > bestSc) { bestSc = sc; best = h; }
+      });
+    });
+    // "Data" genérica só vale para data do incidente; e-mail precisa mencionar envio/e-mail
+    if (best) { map[key] = best; used.add(best); } else map[key] = '';
+  });
+  return map;
+}
+function parseDateCell(v) {
+  if (v === '' || v == null) return '';
+  if (v instanceof Date && !isNaN(v)) return toISO(v);
+  if (typeof v === 'number' && v > 20000 && v < 80000) { // número de série do Excel
+    const d = new Date(Date.UTC(1899, 11, 30) + Math.floor(v) * 86400000);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if (m) { let y = Number(m[3]); if (y < 100) y += 2000; const d = Number(m[1]), mo = Number(m[2]); if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) return `${y}-${pad(mo)}-${pad(d)}`; }
+  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return `${m[1]}-${pad(Number(m[2]))}-${pad(Number(m[3]))}`;
+  return '';
+}
+function mapStatus(txt, dataLib) {
+  const n = norm(txt);
+  if (/liberad|conclu|finaliz|encerrad|^ok$|^sim$/.test(n)) return 'liberado';
+  if (/posterg|adiad/.test(n)) return 'postergado';
+  if (!n && dataLib) return 'liberado';
+  return 'pendente';
+}
+function rowToIncident(row, sheet) {
+  const get = k => { const h = imp.map[k]; if (!h) return ''; const ix = sheet.headers.indexOf(h); return ix < 0 ? '' : row[ix]; };
+  const str = k => String(get(k) ?? '').trim();
+  const dataLiberacao = parseDateCell(get('dataLiberacao'));
+  const prazoNum = parseInt(str('prazo'), 10);
+  const inc = {
+    id: newId(), dataIncidente: parseDateCell(get('dataIncidente')), dataEmail: parseDateCell(get('dataEmail')),
+    local: str('local'), responsavel: str('responsavel'), tipo: str('tipo'),
+    prazo: prazoNum > 0 && prazoNum < 61 ? prazoNum : state.settings.prazoPadrao,
+    observacao: str('observacao'), status: mapStatus(str('status'), dataLiberacao),
+    dataLiberacao, fluig: str('fluig'), obsLiberacao: '', motivoPost: '', dataPost: '', novaData: '', obsPost: '',
+    origem: `${imp.file} › ${sheet.name}`, criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString(),
+  };
+  const temConteudo = inc.dataIncidente || inc.dataEmail || inc.local || inc.responsavel || inc.tipo || inc.observacao;
+  return temConteudo ? inc : null;
+}
+const dupKey = i => [i.dataIncidente, i.dataEmail, norm(i.local), norm(i.responsavel)].join('|');
+function buildImportList() {
+  const existing = new Set(state.incidents.map(dupKey));
+  const out = []; let dup = 0, vazias = 0;
+  imp.sheets.filter(s => imp.selected.has(s.name)).forEach(s => s.data.forEach(r => {
+    const inc = rowToIncident(r, s);
+    if (!inc) { vazias++; return; }
+    if ($('impDup').checked) { const k = dupKey(inc); if (existing.has(k)) { dup++; return; } existing.add(k); }
+    out.push(inc);
+  }));
+  return { out, dup, vazias };
+}
+function renderImport() {
+  $('impSheets').innerHTML = imp.sheets.map(s => `<label><input type="checkbox" data-sheet="${esc(s.name)}" ${imp.selected.has(s.name) ? 'checked' : ''}> ${esc(s.name)}<small>${plural(s.data.length, 'linha', 'linhas')} • cabeçalho na linha ${s.headerRow}</small></label>`).join('');
+  const opts = ['<option value="">— não importar —</option>'].concat(imp.headers.map(h => `<option value="${esc(h)}">${esc(h)}</option>`)).join('');
+  $('impMap').innerHTML = IMP_FIELDS.map(([k, t]) => `<div class="field"><label for="map_${k}">${t}</label><select id="map_${k}" data-map="${k}">${opts}</select></div>`).join('');
+  IMP_FIELDS.forEach(([k]) => { $('map_' + k).value = imp.map[k] || ''; });
+  updateImportPreview();
+}
+function updateImportPreview() {
+  const { out, dup, vazias } = buildImportList();
+  const cols = [['dataIncidente', 'Data incidente', fmtBR], ['dataEmail', 'Envio e-mail', fmtBR], ['local', 'Local'], ['responsavel', 'Responsável'], ['tipo', 'Tipo'], ['prazo', 'Prazo'], ['status', 'Status'], ['dataLiberacao', 'Liberado em', fmtBR], ['fluig', 'Fluig'], ['observacao', 'Observação']];
+  $('impPreview').innerHTML = out.length ? `<table><thead><tr>${cols.map(c => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${out.slice(0, 6).map(i => `<tr>${cols.map(([k, , f]) => `<td>${esc(f ? f(i[k]) : (i[k] || '—'))}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '<div class="list-empty">Nenhuma linha para importar com a seleção atual.</div>';
+  const semEmail = out.filter(i => !i.dataEmail).length;
+  const st = s => out.filter(i => i.status === s).length;
+  $('impSummary').innerHTML = `<b>${plural(out.length, 'registro será importado', 'registros serão importados')}</b> (${st('pendente')} pendentes, ${st('liberado')} liberados, ${st('postergado')} postergados).` +
+    (dup ? ` ${plural(dup, 'linha duplicada ignorada', 'linhas duplicadas ignoradas')}.` : '') +
+    (vazias ? ` ${plural(vazias, 'linha sem dados ignorada', 'linhas sem dados ignoradas')}.` : '') +
+    (semEmail ? `<br>⚠ ${plural(semEmail, 'registro está', 'registros estão')} sem data de envio do e-mail — ficarão como “Aguardando e-mail” até você registrar o envio.` : '') +
+    '<br>Campos que não existem na planilha ficam em branco; nada é inventado. Data limite, dias e situação são recalculados pelo aplicativo.';
+  $('impGo').disabled = !out.length;
+  $('impGo').textContent = out.length ? `Importar ${out.length}` : 'Importar';
+}
+async function runImport() {
+  const { out } = buildImportList(); if (!out.length) return;
+  $('dlgImport').close(); showLoading(true);
+  state.incidents = state.incidents.concat(out); render();
+  const ok = await persist(Store.importIncidents(out), 'Falha na importação.');
+  showLoading(false);
+  if (ok !== null) toast(`${plural(out.length, 'registro importado', 'registros importados')}.`);
+}
+
+/* ---------------- Exportação ---------------- */
+async function openExport() {
+  if (!(await ensureXLSX())) return;
+  const n = v => filtered(v, false).length;
+  const scopes = [['atual', `Visualização atual com filtros (${{ pendentes: 'Pendentes', postergados: 'Postergados', liberados: 'Liberados' }[state.view]})`, filtered().length],
+    ['pendentes', 'Pendentes', n('pendentes')], ['liberados', 'Liberados', n('liberados')], ['postergados', 'Postergados', n('postergados')], ['todos', 'Todos os registros', state.incidents.length]];
+  $('expScopes').innerHTML = scopes.map(([v, t, c], k) => `<label><input type="radio" name="expScope" value="${v}" ${k === 0 ? 'checked' : ''}> ${esc(t)}<small>${c}</small></label>`).join('');
+  $('dlgExport').showModal();
+}
+function serial(iso) { if (!iso) return null; const [y, m, d] = iso.split('-').map(Number); return (Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000; }
+function doExport() {
+  const scope = document.querySelector('input[name="expScope"]:checked').value;
+  const list = scope === 'atual' ? filtered() : scope === 'todos' ? state.incidents.slice() : filtered(scope, false);
+  if (!list.length) { toast('Não há registros nesse grupo para exportar.', true); return; }
+  list.sort((a, b) => (a.dataIncidente || '').localeCompare(b.dataIncidente || ''));
+  const head = ['Data do incidente', 'Data de envio do e-mail', 'Local/Filial', 'Responsável', 'Tipo de incidente', 'Prazo (dias úteis)', 'Data limite', 'Dias úteis decorridos', 'Situação', 'Status', 'Observação', 'Data da liberação', 'Nº Fluig', 'Obs. liberação', 'Liberado no prazo', 'Motivo postergação', 'Data da postergação', 'Nova data prevista', 'Obs. postergação'];
+  const dateCols = [0, 1, 6, 11, 16, 17];
+  const statusTxt = { pendente: 'Pendente', liberado: 'Liberado', postergado: 'Postergado' };
+  const aoa = [head].concat(list.map(i => {
+    const x = info(i);
+    return [serial(i.dataIncidente), serial(i.dataEmail), i.local, i.responsavel, i.tipo, Number(i.prazo) || '', serial(x.limite), i.dataEmail ? x.dias : '',
+      SIT[x.sit].label, statusTxt[i.status] || 'Pendente', i.observacao, serial(i.dataLiberacao), i.fluig, i.obsLiberacao,
+      x.noPrazo === undefined ? '' : (x.noPrazo ? 'Sim' : 'Não'), i.motivoPost, serial(i.dataPost), serial(i.novaData), i.obsPost];
+  }));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  for (let r = 1; r < aoa.length; r++) dateCols.forEach(c => { const ref = XLSX.utils.encode_cell({ r, c }); if (ws[ref] && typeof ws[ref].v === 'number') ws[ref].z = 'dd/mm/yyyy'; });
+  ws['!cols'] = head.map((h, c) => ({ wch: dateCols.includes(c) ? 13 : Math.min(40, Math.max(h.length + 2, 12)) }));
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: aoa.length - 1, c: head.length - 1 } }) };
+  const wb = XLSX.utils.book_new();
+  const nomeAba = { atual: 'Filtrados', pendentes: 'Pendentes', liberados: 'Liberados', postergados: 'Postergados', todos: 'Todos' }[scope];
+  XLSX.utils.book_append_sheet(wb, ws, nomeAba);
+  XLSX.writeFile(wb, `controle-incidentes-${nomeAba.toLowerCase()}-${state.today}.xlsx`);
+  $('dlgExport').close(); toast(`${plural(list.length, 'registro exportado', 'registros exportados')}.`);
+}
+
+/* ---------------- Toast / carregando ---------------- */
+let toastTimer = null;
+function toast(msg, err, action) {
+  const t = $('toast'); $('toastMsg').textContent = msg; t.classList.toggle('err', !!err);
+  const b = $('toastAct');
+  if (action) { b.textContent = action[0]; b.classList.remove('hidden'); b.onclick = () => { t.classList.remove('show'); action[1](); }; }
+  else b.classList.add('hidden');
+  t.classList.add('show'); clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), action ? 6500 : 3500);
+}
+const showLoading = on => $('loading').classList.toggle('hidden', !on);
+
+/* ---------------- Carga inicial ---------------- */
+function applyData(d) {
+    state.incidents = (d && d.incidents) || [];
+    state.holidays = (d && d.holidays) || [];
+    if (d && d.settings) state.settings = Object.assign({ prazoPadrao: 4, contarDiaEnvio: false }, d.settings);
+    state.pinRequired = !!(d && d.pinRequired);
+    if (!state.pinRequired) state.canEdit = true;
+    else if (!state.pin) {
+      // senha guardada na sessão: libera na hora; o servidor confere ao salvar
+      const saved = ss.get('ci_pin');
+      if (saved) { state.pin = saved; state.canEdit = true; } else state.canEdit = false;
+    }
+}
+const SNAP_KEY = 'ci_snapshot_v2';
+function saveSnapshot(d) { if (MODE === 'local') return; try { localStorage.setItem(SNAP_KEY, JSON.stringify(d)); } catch (e) { /* sem cópia local */ } }
+function setSyncing(on) { const el = $('syncInfo'); if (el) el.classList.toggle('hidden', !on); }
+
+async function loadAll(showSpinner = true, silent = false) {
+  if (showSpinner) showLoading(true);
+  setSyncing(true);
+  try {
+    const d = await Store.load();
+    applyData(d); saveSnapshot(d);
+  } catch (e) {
+    console.error(e);
+    if (!silent) toast('Não foi possível carregar os dados. ' + ((e && e.message) || 'Recarregue a página.'), true);
+  }
+  setSyncing(false); showLoading(false); render();
+}
+
+/** Abre na hora: usa os dados que vieram junto com a página (Google) ou a última cópia (GitHub) */
+function readInitial() {
+  if (window.CI_INITIAL) return window.CI_INITIAL;
+  const el = document.getElementById('ci-initial');
+  const t = el ? el.textContent.trim() : '';
+  if (!t || t.charAt(0) !== '{') return null; // no GitHub o marcador do Google não é preenchido
+  try { return JSON.parse(t); } catch (e) { return null; }
+}
+function start() {
+  const ini = MODE === 'gas' ? readInitial() : null;
+  if (ini) {
+    applyData(ini); saveSnapshot(ini); render();
+    return; // dados já frescos; a atualização automática segue a cada minuto
+  }
+  const snap = MODE !== 'local' ? ls.get(SNAP_KEY, null) : null;
+  if (snap) { applyData(snap); render(); loadAll(false, true); }
+  else loadAll(true);
+}
+
+/* ---------------- Senha de edição ---------------- */
+async function toggleLock() {
+  if (state.canEdit) { state.pin = ''; ss.del('ci_pin'); state.canEdit = false; render(); toast('Modo consulta.'); return; }
+  $('pinInput').value = ''; $('dlgPin').showModal(); setTimeout(() => $('pinInput').focus(), 30);
+}
+async function submitPin(e) {
+  e.preventDefault();
+  const pin = $('pinInput').value;
+  showLoading(true);
+  let ok = false;
+  try { ok = await Store.checkPin(pin); } catch (err) { console.error(err); }
+  showLoading(false);
+  if (!ok) { toast('Senha incorreta.', true); $('pinInput').select(); return; }
+  state.pin = pin; ss.set('ci_pin', pin); state.canEdit = true;
+  $('dlgPin').close(); render(); toast('Edição liberada.');
+}
+
+/* ---------------- Eventos ---------------- */
+function bind() {
+  $('btnNew').onclick = () => openIncident(null);
+  $('btnImport').onclick = openImport;
+  $('btnExport').onclick = openExport;
+  $('btnSettings').onclick = openSettings;
+  $('btnFilters').onclick = () => { const f = $('filters'); f.classList.toggle('hidden'); $('btnFilters').setAttribute('aria-expanded', String(!f.classList.contains('hidden'))); };
+  const clear = () => { Object.assign(state.filters, { mes: '', local: '', resp: '', tipo: '', sit: '' }); state.search = ''; $('search').value = ''; render(); };
+  $('btnClearFilters').onclick = clear;
+
+  let st; $('search').addEventListener('input', e => { clearTimeout(st); st = setTimeout(() => { state.search = e.target.value; render(); }, 120); });
+  [['fMesBase', 'mesBase'], ['fMes', 'mes'], ['fLocal', 'local'], ['fResp', 'resp'], ['fTipo', 'tipo'], ['fSit', 'sit']]
+    .forEach(([id, k]) => $(id).addEventListener('change', e => { state.filters[k] = e.target.value; if (k === 'mesBase') state.filters.mes = ''; render(); }));
+
+  document.querySelector('.seg').addEventListener('click', e => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    state.view = t.dataset.view; state.filters.sit = ''; state.sort = { key: null, dir: 1 }; render();
+  });
+  $('counters').addEventListener('click', e => {
+    const c = e.target.closest('[data-sit]'); if (!c) return;
+    state.filters.sit = state.filters.sit === c.dataset.sit ? '' : c.dataset.sit; render();
+  });
+  document.body.addEventListener('click', e => {
+    const g = e.target.closest('[data-goto]'); if (g) { state.view = g.dataset.goto; state.filters.sit = ''; state.sort = { key: null, dir: 1 }; render(); }
+    if (e.target.closest('[data-clear]')) clear();
+    if (e.target.closest('[data-close]')) e.target.closest('dialog').close();
+  });
+  $('grid').addEventListener('click', e => {
+    const th = e.target.closest('th[data-sort]');
+    if (th) {
+      const k = th.dataset.sort, cur = state.sort.key || VIEWS[state.view].sort.key, dir = state.sort.key ? state.sort.dir : VIEWS[state.view].sort.dir;
+      state.sort = { key: k, dir: cur === k ? -dir : 1 }; render(); return;
+    }
+    const more = e.target.closest('[data-more]');
+    if (more) { e.stopPropagation(); openRowMenu(more, more.closest('tr').dataset.id); return; }
+    const b = e.target.closest('[data-act]'); if (b) { onTableAction(b.dataset.act, b.closest('tr').dataset.id); return; }
+    const tr = e.target.closest('tbody tr');
+    if (tr && state.canEdit && !window.getSelection().toString()) onTableAction('editar', tr.dataset.id);
+  });
+
+  $('formIncident').addEventListener('submit', submitIncident);
+  $('iStatus').addEventListener('change', toggleStatusSets);
+  ['iDataEmail', 'iPrazo', 'iDataInc'].forEach(id => $(id).addEventListener('input', updateCalc));
+  $('iEmailUnlock').addEventListener('change', e => { $('iDataEmail').disabled = !e.target.checked; if (e.target.checked) $('iDataEmail').focus(); });
+  $('formLiberar').addEventListener('submit', submitLiberar);
+  $('formPostergar').addEventListener('submit', submitPostergar);
+  $('formEmail').addEventListener('submit', submitEmail);
+  $('eData').addEventListener('input', updateEmailCalc);
+
+  $('hAdd').onclick = () => {
+    const data = $('hData').value; if (!data) { toast('Informe a data do feriado.', true); return; }
+    if (draftHolidays.some(h => h.data === data)) { toast('Já existe um feriado nessa data.', true); return; }
+    draftHolidays.push({ data, nome: $('hNome').value.trim() }); $('hData').value = ''; $('hNome').value = '';
+    renderHolidayList(); updateExemplo();
+  };
+  $('hList').addEventListener('click', e => { const b = e.target.closest('[data-hdel]'); if (!b) return; draftHolidays.splice(Number(b.dataset.hdel), 1); renderHolidayList(); updateExemplo(); });
+  $('hNacionais').onclick = addNacionais;
+  ['sPrazo', 'sContarEnvio'].forEach(id => $(id).addEventListener('input', updateExemplo));
+  $('sSave').onclick = saveSettings;
+
+  $('impFile').addEventListener('change', e => readImportFile(e.target.files[0]));
+  const drop = $('impDrop');
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => readImportFile(e.dataTransfer.files[0]));
+  $('impSheets').addEventListener('change', e => { const n = e.target.dataset.sheet; if (!n) return; e.target.checked ? imp.selected.add(n) : imp.selected.delete(n); updateImportPreview(); });
+  $('impMap').addEventListener('change', e => { const k = e.target.dataset.map; if (!k) return; imp.map[k] = e.target.value; updateImportPreview(); });
+  $('impDup').addEventListener('change', () => imp && updateImportPreview());
+  $('impGo').onclick = runImport;
+  $('expGo').onclick = doExport;
+  $('btnLock').onclick = toggleLock;
+  $('rowMenu').addEventListener('click', e => { const b = e.target.closest('[data-mact]'); if (!b) return; closeRowMenu(); onTableAction(b.dataset.mact, b.dataset.id); });
+  document.addEventListener('click', e => { if (!e.target.closest('#rowMenu') && !e.target.closest('[data-more]')) closeRowMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRowMenu(); });
+  window.addEventListener('resize', closeRowMenu);
+  document.querySelector('.sheet-scroll').addEventListener('scroll', closeRowMenu, { passive: true });
+  $('formPin').addEventListener('submit', submitPin);
+
+  // Busca novidades na planilha a cada minuto (quem só consulta vê o que o responsável lança)
+  if (MODE !== 'local') setInterval(() => {
+    if (document.hidden || state.busy || document.querySelector('dialog[open]')) return;
+    loadAll(false, true);
+  }, 60 * 1000);
+
+  // Situação muda sozinha com a virada do dia
+  const tick = () => { const t = todayISO(); if (t !== state.today) { state.today = t; render(); } };
+  setInterval(tick, 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+}
+
+bind();
+start();
+</script>
+</body>
+</html>
