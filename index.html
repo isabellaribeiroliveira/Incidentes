@@ -30,6 +30,8 @@
   --late: #c0262d;    --late-bg: #fdecec;
   --hold: #6043c9;    --hold-bg: #f0ecfd;
   --muted: #64748b;   --muted-bg: #eef1f5;
+  --corr: #a35b00;    --corr-bg: #fff5d6;
+  --conf: #1d5bd8;    --conf-bg: #e9f0fe;
 
   --r-s: 8px;
   --r-m: 12px;
@@ -62,6 +64,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn.primary:hover { background: var(--accent-2); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
 .btn.ghost:hover { background: rgba(15, 29, 43, .06); }
+.btn.warn { background: var(--corr-bg); border-color: #f1d58a; color: var(--corr); font-weight: 600; }
+.btn.warn:hover { background: #ffeeb8; }
+.foot-gap { flex: 1; }
 .btn.danger { background: var(--late); border-color: var(--late); color: #fff; font-weight: 600; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; display: inline-grid; place-items: center; }
@@ -71,6 +76,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .stat { position: relative; display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 14px 16px 13px 18px; border-radius: var(--r-m); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; overflow: hidden; transition: transform .12s, box-shadow .12s, border-color .12s; }
 .stat::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c); }
 .stat:hover { transform: translateY(-1px); }
+.stat-ico { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--c); background: var(--cbg); }
+.stat.zero .stat-ico { color: var(--ink-3); background: var(--muted-bg); }
 .stat-n { font-size: 28px; font-weight: 700; line-height: 1.1; color: var(--c); }
 .stat-l { font-size: 13px; color: var(--ink-2); font-weight: 500; }
 .stat.active { border-color: var(--c); background: var(--cbg); }
@@ -81,16 +88,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .stat.wait { --c: var(--muted); --cbg: var(--muted-bg); }
 
 .alert { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 11px 16px; margin-bottom: 14px; border-radius: var(--r-m); background: var(--hold-bg); color: var(--hold); border: 1px solid #ddd4fa; font-weight: 500; }
+.alert.conf { background: var(--conf-bg); color: var(--conf); border-color: #cddcfb; }
 .alert.info { background: var(--accent-soft); color: var(--accent-2); border-color: #c5e1e6; }
 
 /* ---------- Painel principal ---------- */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); box-shadow: var(--shadow); overflow: hidden; }
-.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px; border-bottom: 1px solid var(--line); }
-.seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--muted-bg); border-radius: 10px; }
-.tab { height: 32px; padding: 0 13px; border: none; border-radius: 8px; background: transparent; cursor: pointer; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
-.tab .tab-n { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px; border-radius: 10px; background: rgba(15, 29, 43, .07); font-size: 12px; text-align: center; }
-.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(15, 29, 43, .12); }
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.tabbar { display: flex; align-items: center; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: thin; }
+.tab { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 50px; padding: 0 14px; border: none; background: transparent; cursor: pointer; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
+.tab:hover { color: var(--ink); }
+.tab::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: transparent; }
+.tab[aria-selected="true"] { color: var(--ink); font-weight: 600; }
+.tab[aria-selected="true"]::after { background: var(--accent); }
+.tab-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.d-pend { background: var(--accent); } .d-corr { background: #e0a100; } .d-post { background: var(--hold); } .d-conf { background: var(--conf); } .d-lib { background: var(--ok); }
+.tab .tab-n { min-width: 22px; padding: 1px 7px; border-radius: 10px; background: var(--muted-bg); color: var(--ink-2); font-size: 12px; font-weight: 600; text-align: center; }
 .tab[aria-selected="true"] .tab-n { background: var(--accent-soft); color: var(--accent-2); }
+.tab .tab-n.hot { background: var(--conf); color: #fff; }
+.tab-sep { color: var(--line-2); font-size: 18px; padding: 0 2px; user-select: none; }
 .search { flex: 1 1 220px; position: relative; }
 .search input { width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid var(--line-2); border-radius: var(--r-s); background: var(--surface); }
 .search input:focus { border-color: var(--accent); outline: 3px solid var(--accent-soft); }
@@ -123,6 +138,8 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; }
 .grid tr.s-tratar { --row: var(--late); }
 .grid tr.s-liberado { --row: var(--ok); }
 .grid tr.s-semdata { --row: #b6c0cc; }
+.grid tr.s-correcao { --row: #e0a100; }
+.grid tr.s-conferir { --row: var(--conf); }
 .grid td.num { text-align: right; }
 .grid td.date { color: var(--ink-2); }
 .grid td.strong { font-weight: 600; }
@@ -142,6 +159,8 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; }
 .pill.tratar { --pc: var(--late); --pbg: var(--late-bg); }
 .pill.liberado { --pc: var(--ok); --pbg: var(--ok-bg); }
 .pill.semdata { --pc: var(--muted); --pbg: var(--muted-bg); }
+.pill.correcao { --pc: var(--corr); --pbg: var(--corr-bg); }
+.pill.conferir { --pc: var(--conf); --pbg: var(--conf-bg); }
 
 .cell-actions { width: 1%; }
 .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
@@ -187,6 +206,10 @@ fieldset.extra { grid-column: 1 / -1; border: 1px solid var(--line); border-radi
 fieldset.extra legend { padding: 0 6px; font-weight: 600; font-size: 13px; }
 fieldset.extra .full { grid-column: 1 / -1; }
 .calc-box { grid-column: 1 / -1; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; padding: 12px 14px; background: var(--accent-soft); border-radius: var(--r-m); font-size: 13px; color: var(--accent-2); }
+.sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; margin: 0 0 16px; padding: 14px 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-m); }
+.sum dt { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); font-weight: 600; }
+.sum dd { margin: 2px 0 0; font-weight: 500; overflow-wrap: anywhere; }
+.ok-t { color: var(--ok); font-weight: 600; } .late-t { color: var(--late); font-weight: 600; }
 .calc-box b { font-variant-numeric: tabular-nums; color: var(--ink); }
 
 .list { border: 1px solid var(--line); border-radius: var(--r-m); max-height: 260px; overflow-y: auto; }
@@ -241,9 +264,12 @@ fieldset.extra .full { grid-column: 1 / -1; }
   .stat { padding: 11px 12px 10px 15px; }
   .stat-n { font-size: 22px; }
   .toolbar { padding: 10px; }
-  .seg { width: 100%; overflow-x: auto; }
-  .tab { flex: 1; padding: 0 6px; font-size: 13px; }
-  .tab .tab-n { margin-left: 2px; padding: 0 5px; }
+  .tabbar { padding: 0 4px; }
+  .tab { height: 46px; padding: 0 10px; font-size: 13px; }
+  .tab-sep { display: none; }
+  .stat-ico { width: 28px; height: 28px; top: 10px; right: 10px; }
+  .sum { grid-template-columns: 1fr 1fr; }
+  .foot-gap { display: none; }
   #btnNew { flex: 1; justify-content: center; }
   .sheet-scroll { max-height: none; }
   .grid thead { display: none; }
@@ -289,15 +315,20 @@ fieldset.extra .full { grid-column: 1 / -1; }
 
   <div class="alert info hidden" id="modeInfo">👁 Modo consulta: você vê todos os registros, mas só o responsável pode alterar.</div>
   <section class="stats" id="counters" aria-label="Contadores de situação"></section>
+  <div class="alert conf hidden" id="alertConf" role="status"></div>
   <div class="alert hidden" id="alertPost" role="status"></div>
 
   <main class="panel">
+    <nav class="tabbar seg" role="tablist" aria-label="Etapas">
+      <button class="tab" role="tab" data-view="pendentes" aria-selected="true"><span class="tab-dot d-pend"></span>Pendentes <span class="tab-n" id="nPend">0</span></button>
+      <button class="tab" role="tab" data-view="correcao" aria-selected="false"><span class="tab-dot d-corr"></span>Em correção <span class="tab-n" id="nCorr">0</span></button>
+      <button class="tab" role="tab" data-view="postergados" aria-selected="false"><span class="tab-dot d-post"></span>Postergados <span class="tab-n" id="nPost">0</span></button>
+      <span class="tab-sep" aria-hidden="true">›</span>
+      <button class="tab" role="tab" data-view="conferencia" aria-selected="false"><span class="tab-dot d-conf"></span>A conferir <span class="tab-n" id="nConf">0</span></button>
+      <span class="tab-sep" aria-hidden="true">›</span>
+      <button class="tab" role="tab" data-view="liberados" aria-selected="false"><span class="tab-dot d-lib"></span>Finalizados <span class="tab-n" id="nLib">0</span></button>
+    </nav>
     <div class="toolbar">
-      <nav class="seg" role="tablist">
-        <button class="tab" role="tab" data-view="pendentes" aria-selected="true">Pendentes <span class="tab-n" id="nPend">0</span></button>
-        <button class="tab" role="tab" data-view="postergados" aria-selected="false">Postergados <span class="tab-n" id="nPost">0</span></button>
-        <button class="tab" role="tab" data-view="liberados" aria-selected="false">Liberados <span class="tab-n" id="nLib">0</span></button>
-      </nav>
       <div class="search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input id="search" type="search" placeholder="Pesquisar local, responsável, tipo, nº Fluig…" aria-label="Pesquisar">
@@ -346,12 +377,23 @@ fieldset.extra .full { grid-column: 1 / -1; }
         <div class="calc-box" id="iCalc"></div>
         <div class="field full"><label for="iObs">Observação</label><textarea id="iObs" rows="2"></textarea></div>
         <div class="field"><label for="iStatus">Status</label>
-          <select id="iStatus"><option value="pendente">Pendente</option><option value="postergado">Postergado</option><option value="liberado">Liberado no Fluig</option></select></div>
+          <select id="iStatus"><option value="pendente">Pendente</option><option value="correcao">Em correção</option><option value="postergado">Postergado</option><option value="conferencia">Liberado no Fluig – a conferir</option><option value="liberado">Conferido – finalizado</option></select></div>
 
         <fieldset class="extra hidden" id="iLibSet"><legend>Liberação no Fluig</legend>
           <div class="field"><label class="req" for="iLibData">Data da liberação</label><input type="date" id="iLibData"></div>
           <div class="field"><label for="iFluig">Nº/código do Fluig</label><input id="iFluig"></div>
-          <div class="field full"><label for="iLibObs">Observação da liberação</label><input id="iLibObs"></div>
+          <div class="field"><label for="iLibPor">Liberado por</label><input id="iLibPor" autocomplete="off"></div>
+          <div class="field"><label for="iLibObs">Observação da liberação</label><input id="iLibObs"></div>
+        </fieldset>
+        <fieldset class="extra hidden" id="iConfSet"><legend>Conferência</legend>
+          <div class="field"><label class="req" for="iConfData">Data da conferência</label><input type="date" id="iConfData"></div>
+          <div class="field"><label for="iConfPor">Conferido por</label><input id="iConfPor" autocomplete="off"></div>
+          <div class="field full"><label for="iConfObs">Observação da conferência</label><input id="iConfObs"></div>
+        </fieldset>
+        <fieldset class="extra hidden" id="iCorrSet"><legend>Correção</legend>
+          <div class="field"><label for="iCorrData">Enviado para correção em</label><input type="date" id="iCorrData"></div>
+          <div class="field"><label for="iCorrPara">Enviado para</label><input id="iCorrPara" list="dlResp" autocomplete="off"></div>
+          <div class="field full"><label class="req" for="iCorrMotivo">O que precisa ser corrigido</label><input id="iCorrMotivo"></div>
         </fieldset>
         <fieldset class="extra hidden" id="iPostSet"><legend>Postergação</legend>
           <div class="field full"><label class="req" for="iPostMotivo">Motivo</label><input id="iPostMotivo"></div>
@@ -372,9 +414,11 @@ fieldset.extra .full { grid-column: 1 / -1; }
     <div class="dlg-body"><div class="form-grid">
       <div class="field"><label class="req" for="lData">Data da liberação</label><input type="date" id="lData"></div>
       <div class="field"><label for="lFluig">Nº/código do Fluig</label><input id="lFluig"></div>
+      <div class="field full"><label for="lPor">Liberado por</label><input id="lPor" autocomplete="off" placeholder="Quem fez a liberação no Fluig"></div>
       <div class="field full"><label for="lObs">Observação</label><textarea id="lObs" rows="2"></textarea></div>
+      <div class="calc-box"><span>Depois de liberado, o incidente vai para <b>A conferir</b> e só é finalizado após a conferência.</span></div>
     </div></div>
-    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Liberar</button></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Liberar e enviar para conferência</button></div>
   </form>
 </dialog>
 
@@ -387,6 +431,55 @@ fieldset.extra .full { grid-column: 1 / -1; }
       <div class="calc-box" id="eCalc"></div>
     </div></div>
     <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Registrar e iniciar prazo</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Enviar para correção ===== -->
+<dialog id="dlgCorrecao" class="small">
+  <form class="dlg" id="formCorrecao" novalidate>
+    <div class="dlg-head"><h2>Enviar para correção</h2><p id="crResumo"></p></div>
+    <div class="dlg-body"><div class="form-grid">
+      <div class="field"><label for="crData">Enviado em</label><input type="date" id="crData"></div>
+      <div class="field"><label for="crPara">Enviado para</label><input id="crPara" list="dlResp" autocomplete="off"></div>
+      <div class="field full"><label class="req" for="crMotivo">O que precisa ser corrigido</label><textarea id="crMotivo" rows="3"></textarea></div>
+      <div class="calc-box"><span>Enquanto estiver em correção, o incidente não aparece como atrasado. Registre a devolutiva quando ela chegar.</span></div>
+    </div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Enviar para correção</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Devolutiva da correção ===== -->
+<dialog id="dlgDevolutiva" class="small">
+  <form class="dlg" id="formDevolutiva" novalidate>
+    <div class="dlg-head"><h2>Registrar devolutiva</h2><p id="dvResumo"></p></div>
+    <div class="dlg-body"><div class="form-grid">
+      <div class="field full"><label for="dvData">Data da devolutiva</label><input type="date" id="dvData"></div>
+      <div class="field full"><label for="dvObs">Observação</label><textarea id="dvObs" rows="2" placeholder="O que foi corrigido, quem respondeu…"></textarea></div>
+      <label class="check full"><input type="checkbox" id="dvRecontar"> Reiniciar a contagem dos dias úteis a partir da devolutiva</label>
+      <div class="calc-box" id="dvCalc"></div>
+    </div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Registrar e voltar para Pendentes</button></div>
+  </form>
+</dialog>
+
+<!-- ===== Conferência ===== -->
+<dialog id="dlgConferir">
+  <form class="dlg" id="formConferir" novalidate>
+    <div class="dlg-head"><h2>Conferir liberação</h2><p id="cfResumo"></p></div>
+    <div class="dlg-body">
+      <dl class="sum" id="cfSum"></dl>
+      <div class="form-grid">
+        <div class="field"><label for="cfData">Data da conferência</label><input type="date" id="cfData"></div>
+        <div class="field"><label for="cfPor">Conferido por</label><input id="cfPor" autocomplete="off"></div>
+        <div class="field full"><label id="cfObsLabel" for="cfObs">Observação</label><textarea id="cfObs" rows="2" placeholder="Obrigatória ao devolver: diga o que precisa ser ajustado"></textarea></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <span class="foot-gap"></span>
+      <button type="button" class="btn warn" id="cfDevolver">Devolver para pendentes</button>
+      <button type="button" class="btn primary" id="cfAprovar">✓ Aprovar e finalizar</button>
+    </div>
   </form>
 </dialog>
 
@@ -495,7 +588,7 @@ fieldset.extra .full { grid-column: 1 / -1; }
 <script type="application/json" id="ci-initial"><?!= inicial ?></script>
 <script>
   /* Link do App da Web do Google Apps Script (usado quando a página é aberta pelo GitHub) */
-  window.CI_API_URL = "https://script.google.com/macros/s/AKfycbxXux2fDvg6vb7NkgXjzQFd-21zhUZR3GhtWO2M_xertPG4-LMWHFXIxH4Oyq3FX0RiOQ/exec";
+  window.CI_API_URL = "https://script.google.com/macros/s/AKfycbyXwzwzEl37q1oSCkxvl65ywupmEyhK6vuVFPJ138Rua5Dd26T0m-nn5Dw0Of9F3CjDrw/exec";
 </script>
 <script>
 /* =========================================================
@@ -642,19 +735,40 @@ const SIT = {
   semdata: { label: 'Aguardando e-mail', icon: '✉️' },
   postergado: { label: 'Postergado', icon: '⏸' },
   tratar: { label: 'Tratar postergado', icon: '⏰' },
-  liberado: { label: 'Liberado', icon: '✅' },
+  correcao: { label: 'Em correção', icon: '↩️' },
+  conferir: { label: 'A conferir', icon: '🔍' },
+  liberado: { label: 'Finalizado', icon: '✅' },
 };
-const SIT_ORDER = { atrasado: 0, tratar: 0, hoje: 1, emdia: 2, semdata: 3, postergado: 4, liberado: 5 };
+const SIT_ORDER = { atrasado: 0, tratar: 0, hoje: 1, emdia: 2, semdata: 3, correcao: 4, conferir: 4, postergado: 4, liberado: 5 };
+const STATUS_LABEL = { pendente: 'Pendente', correcao: 'Em correção', postergado: 'Postergado', conferencia: 'A conferir', liberado: 'Finalizado' };
+const VIEW_OF_STATUS = { pendente: 'pendentes', correcao: 'correcao', postergado: 'postergados', conferencia: 'conferencia', liberado: 'liberados' };
+const VIEW_LABEL = { pendentes: 'Pendentes', correcao: 'Em correção', postergados: 'Postergados', conferencia: 'A conferir', liberados: 'Finalizados' };
+/** Data que inicia a contagem: o envio do e-mail, ou a devolutiva da correção quando o prazo foi reiniciado */
+const baseDate = inc => inc.inicioPrazo || inc.dataEmail;
 
 function info(inc) {
-  const t = state.today;
-  const limite = calcLimite(inc.dataEmail, inc.prazo);
-  const r = { limite, dias: diasDecorridos(inc.dataEmail, t), sit: 'semdata', sub: '' };
-  if (inc.status === 'liberado') {
-    r.sit = 'liberado';
-    r.dias = diasDecorridos(inc.dataEmail, inc.dataLiberacao || t);
+  const t = state.today, base = baseDate(inc);
+  const limite = calcLimite(base, inc.prazo);
+  const r = { limite, dias: diasDecorridos(base, t), sit: 'semdata', sub: '' };
+  if (inc.status === 'liberado' || inc.status === 'conferencia') {
+    r.dias = diasDecorridos(base, inc.dataLiberacao || t);
     if (limite && inc.dataLiberacao) r.noPrazo = inc.dataLiberacao <= limite;
-    r.sub = r.noPrazo === undefined ? '' : (r.noPrazo ? 'no prazo' : 'fora do prazo');
+    const prazoTxt = r.noPrazo === undefined ? '' : (r.noPrazo ? 'liberado no prazo' : 'liberado fora do prazo');
+    if (inc.status === 'conferencia') {
+      r.sit = 'conferir';
+      const espera = businessBetween(inc.dataLiberacao || t, t);
+      r.sub = [prazoTxt, espera ? `aguardando há ${plural(espera, 'dia útil', 'dias úteis')}` : ''].filter(Boolean).join(' • ');
+    } else {
+      r.sit = 'liberado';
+      r.sub = prazoTxt;
+    }
+    return r;
+  }
+  if (inc.status === 'correcao') {
+    r.sit = 'correcao';
+    const d = inc.dataCorrecao ? businessBetween(inc.dataCorrecao, t) : 0;
+    r.diasCorr = d;
+    r.sub = inc.dataCorrecao ? (d ? `aguardando há ${plural(d, 'dia útil', 'dias úteis')}` : 'enviado hoje') : '';
     return r;
   }
   if (inc.status === 'postergado') {
@@ -671,9 +785,10 @@ function info(inc) {
   return r;
 }
 function actionsFor(inc) {
-  if (state.view === 'pendentes' && !inc.dataEmail)
-    return [['email', 'Registrar e-mail', 'go'], ['postergar', 'Postergar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']];
-  return VIEWS[state.view].actions;
+  const v = VIEW_OF_STATUS[inc.status] || 'pendentes';
+  if (v === 'pendentes' && !inc.dataEmail)
+    return [['email', 'Registrar e-mail', 'go'], ['correcao', 'Enviar para correção'], ['postergar', 'Postergar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']];
+  return VIEWS[v].actions;
 }
 function actionsHtml(inc) {
   const list = actionsFor(inc);
@@ -693,7 +808,14 @@ function openRowMenu(btn, id) {
   m.querySelector('button')?.focus({ preventScroll: true });
 }
 const closeRowMenu = () => $('rowMenu').classList.add('hidden');
-const viewOf = inc => inc.status === 'liberado' ? 'liberados' : inc.status === 'postergado' ? 'postergados' : 'pendentes';
+const viewOf = inc => VIEW_OF_STATUS[inc.status] || 'pendentes';
+const ICO = p => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  atrasado: ICO('<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/>'),
+  hoje: ICO('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  emdia: ICO('<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>'),
+  semdata: ICO('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
+};
 const pill = (key, sub) => `<span class="sitw"><span class="pill ${key}"><span class="ico">${SIT[key].icon} </span>${SIT[key].label}</span>${sub ? `<span class="sub">${esc(sub)}</span>` : ''}</span>`;
 
 /* ---------------- Colunas por aba ---------------- */
@@ -704,7 +826,7 @@ const C = {
   responsavel: { t: 'Responsável', v: i => norm(i.responsavel), h: i => esc(i.responsavel) || '—' },
   tipo: { t: 'Tipo', v: i => norm(i.tipo), h: i => esc(i.tipo) || '—' },
   prazo: { t: 'Prazo', cls: 'num', v: i => Number(i.prazo) || 0, h: i => `<span title="dias úteis">${i.prazo || state.settings.prazoPadrao}</span>` },
-  limite: { t: 'Data limite', cls: 'date', v: (i, x) => x.limite, h: (i, x) => `<b>${fmtBR(x.limite)}</b>` },
+  limite: { t: 'Data limite', cls: 'date', v: (i, x) => x.limite, h: (i, x) => `<b>${fmtBR(x.limite)}</b>` + (i.inicioPrazo ? '<span class="sub">recontado da devolutiva</span>' : '') },
   dias: { t: 'Dias', cls: 'num', v: (i, x) => x.dias, h: (i, x) => (i.dataEmail ? x.dias : '—') },
   sit: { t: 'Situação', cls: 'wide', v: (i, x) => SIT_ORDER[x.sit] * 1e9 + (x.limite ? Number(x.limite.replace(/-/g, '')) : 99999999), h: (i, x) => pill(x.sit, x.sub) },
   observacao: { t: 'Observação', cls: 'obs', v: i => norm(i.observacao), h: i => esc(i.observacao) || '<span class="dim">—</span>' },
@@ -715,13 +837,28 @@ const C = {
   fluig: { t: 'Nº Fluig', v: i => norm(i.fluig), h: i => esc(i.fluig) || '—' },
   diasLib: { t: 'Dias até liberar', cls: 'num', v: (i, x) => x.dias, h: (i, x) => (i.dataEmail && i.dataLiberacao ? x.dias : '—') },
   noPrazo: { t: 'Situação', cls: 'wide', v: (i, x) => (x.noPrazo ? 0 : 1), h: (i, x) => pill('liberado', x.sub) },
+  libInfo: { t: 'Liberado em', cls: 'date', v: i => i.dataLiberacao, h: i => fmtBR(i.dataLiberacao) + (i.liberadoPor ? `<span class="sub">por ${esc(i.liberadoPor)}</span>` : '') },
+  confInfo: { t: 'Conferido em', cls: 'date', v: i => i.dataConferencia, h: i => fmtBR(i.dataConferencia) + (i.conferidoPor ? `<span class="sub">por ${esc(i.conferidoPor)}</span>` : '') },
+  liberadoPor: { t: 'Liberado por', v: i => norm(i.liberadoPor), h: i => esc(i.liberadoPor) || '<span class="dim">—</span>' },
+  dataConferencia: { t: 'Conferido em', cls: 'date', v: i => i.dataConferencia, h: i => fmtBR(i.dataConferencia) },
+  conferidoPor: { t: 'Conferido por', v: i => norm(i.conferidoPor), h: i => esc(i.conferidoPor) || '<span class="dim">—</span>' },
+  dataCorrecao: { t: 'Enviado em', cls: 'date', v: i => i.dataCorrecao, h: i => fmtBR(i.dataCorrecao) },
+  correcaoPara: { t: 'Enviado para', v: i => norm(i.correcaoPara), h: i => esc(i.correcaoPara) || '<span class="dim">—</span>' },
+  motivoCorrecao: { t: 'O que corrigir', cls: 'obs', v: i => norm(i.motivoCorrecao), h: i => esc(i.motivoCorrecao) || '—' },
+  diasCorr: { t: 'Dias', cls: 'num', v: (i, x) => x.diasCorr || 0, h: (i, x) => x.diasCorr ?? '—' },
 };
 const VIEWS = {
   pendentes: {
     cols: ['dataIncidente', 'dataEmail', 'local', 'responsavel', 'prazo', 'limite', 'dias', 'sit', 'observacao'],
     sort: { key: 'sit', dir: 1 },
-    actions: [['liberar', 'Liberar no Fluig', 'go'], ['postergar', 'Postergar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
+    actions: [['liberar', 'Liberar no Fluig', 'go'], ['correcao', 'Enviar para correção'], ['postergar', 'Postergar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
     sits: ['atrasado', 'hoje', 'emdia', 'semdata'],
+  },
+  correcao: {
+    cols: ['dataIncidente', 'local', 'responsavel', 'dataCorrecao', 'correcaoPara', 'motivoCorrecao', 'sit', 'observacao'],
+    sort: { key: 'dataCorrecao', dir: 1 },
+    actions: [['devolutiva', 'Registrar devolutiva', 'go'], ['liberar', 'Liberar no Fluig'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
+    sits: [],
   },
   postergados: {
     cols: ['dataIncidente', 'dataEmail', 'local', 'responsavel', 'motivoPost', 'dataPost', 'novaData', 'sit', 'observacao'],
@@ -729,10 +866,16 @@ const VIEWS = {
     actions: [['liberar', 'Liberar no Fluig', 'go'], ['retomar', 'Retomar'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
     sits: ['tratar', 'postergado'],
   },
+  conferencia: {
+    cols: ['dataIncidente', 'local', 'responsavel', 'limite', 'libInfo', 'fluig', 'sit', 'observacao'],
+    sort: { key: 'libInfo', dir: 1 },
+    actions: [['conferir', 'Conferir', 'go'], ['devolver', 'Devolver para pendentes'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
+    sits: [],
+  },
   liberados: {
-    cols: ['dataIncidente', 'dataEmail', 'local', 'responsavel', 'limite', 'dataLiberacao', 'fluig', 'diasLib', 'noPrazo', 'observacao'],
-    sort: { key: 'dataLiberacao', dir: -1 },
-    actions: [['reabrir', 'Reabrir'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
+    cols: ['dataIncidente', 'local', 'responsavel', 'limite', 'libInfo', 'fluig', 'confInfo', 'noPrazo', 'observacao'],
+    sort: { key: 'confInfo', dir: -1 },
+    actions: [['desconferir', 'Voltar para conferência'], ['reabrir', 'Reabrir em pendentes'], ['editar', 'Editar'], ['excluir', 'Excluir', 'del']],
     sits: [],
   },
 };
@@ -749,6 +892,7 @@ function filtered(view = state.view, applyFilters = true) {
     if (f.sit && info(i).sit !== f.sit) return false;
     if (q) {
       const hay = norm([i.local, i.responsavel, i.tipo, i.observacao, i.fluig, i.obsLiberacao, i.motivoPost, i.obsPost,
+        i.motivoCorrecao, i.correcaoPara, i.obsDevolutiva, i.liberadoPor, i.conferidoPor, i.obsConferencia,
         fmtBR(i.dataIncidente), fmtBR(i.dataEmail), fmtBR(i.dataLiberacao)].join(' | '));
       if (!hay.includes(q)) return false;
     }
@@ -789,18 +933,24 @@ function render() {
   const post = state.incidents.filter(i => viewOf(i) === 'postergados');
   const tratar = post.filter(i => info(i).sit === 'tratar').length;
 
+  const count = v => state.incidents.filter(i => viewOf(i) === v).length;
   $('nPend').textContent = pend.length; $('nPost').textContent = post.length;
-  $('nLib').textContent = state.incidents.filter(i => i.status === 'liberado').length;
+  $('nCorr').textContent = count('correcao'); $('nLib').textContent = count('liberados');
+  const nConf = count('conferencia');
+  $('nConf').textContent = nConf; $('nConf').classList.toggle('hot', nConf > 0);
   document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === state.view)));
 
   const isPend = state.view === 'pendentes';
   $('counters').classList.toggle('hidden', !isPend);
   $('counters').innerHTML = [['atrasado', 'late', 'Atrasados', 'Atrasado'], ['hoje', 'today', 'Liberar hoje', 'Liberar hoje'], ['emdia', 'ok', 'Em dia', 'Em dia'], ['semdata', 'wait', 'Aguardando e-mail', 'Aguardando e-mail']]
-    .map(([k, cls, p, s]) => { const n = cnt(k); return `<button class="stat ${cls} ${n ? '' : 'zero'} ${state.filters.sit === k ? 'active' : ''}" data-sit="${k}" title="Filtrar: ${SIT[k].label}" aria-pressed="${state.filters.sit === k}"><span class="stat-n">${n}</span><span class="stat-l">${SIT[k].icon} ${n === 1 ? s : p}</span></button>`; }).join('');
+    .map(([k, cls, p, s]) => { const n = cnt(k); return `<button class="stat ${cls} ${n ? '' : 'zero'} ${state.filters.sit === k ? 'active' : ''}" data-sit="${k}" title="Filtrar: ${SIT[k].label}" aria-pressed="${state.filters.sit === k}"><span class="stat-n">${n}</span><span class="stat-ico">${ICON[k]}</span><span class="stat-l">${n === 1 ? s : p}</span></button>`; }).join('');
 
   const al = $('alertPost');
   al.classList.toggle('hidden', !(tratar && state.view !== 'postergados'));
   al.innerHTML = `<span>⏰ ${tratar === 1 ? 'Existe 1 pendência postergada' : `Existem ${tratar} pendências postergadas`} com a nova data prevista atingida.</span><button class="btn" data-goto="postergados">Ver postergados</button>`;
+  const ac = $('alertConf');
+  ac.classList.toggle('hidden', !(nConf && state.view !== 'conferencia' && state.canEdit));
+  ac.innerHTML = `<span>🔍 ${nConf === 1 ? '1 liberação aguarda' : `${nConf} liberações aguardam`} a sua conferência para ser finalizada.</span><button class="btn" data-goto="conferencia">Conferir agora</button>`;
 
   const V = VIEWS[state.view];
   const sort = state.sort.key ? state.sort : V.sort;
@@ -830,8 +980,10 @@ function render() {
   if (!rows.length) {
     if (total) empty.innerHTML = `<span class="em-ico">🔎</span><strong>Nenhum registro com esses filtros</strong>Ajuste a pesquisa ou <button class="btn" data-clear style="margin-left:6px">limpe os filtros</button>`;
     else if (isPend) empty.innerHTML = `<span class="em-ico">✅</span><strong>Nenhuma pendência</strong>Tudo liberado. Use “+ Novo incidente” para lançar o próximo ou importe sua planilha.`;
+    else if (state.view === 'correcao') empty.innerHTML = '<span class="em-ico">↩️</span><strong>Nada em correção</strong>Use “Enviar para correção” quando devolver um ocorrido e ficar aguardando a devolutiva.';
+    else if (state.view === 'conferencia') empty.innerHTML = '<span class="em-ico">🔍</span><strong>Nada para conferir</strong>Quando um incidente for liberado no Fluig, ele aparece aqui para a sua conferência.';
     else if (state.view === 'postergados') empty.innerHTML = '<span class="em-ico">⏸</span><strong>Nenhum incidente postergado</strong>Use “Postergar” na aba Pendentes quando precisar adiar uma análise.';
-    else empty.innerHTML = '<span class="em-ico">📁</span><strong>Nenhum incidente liberado ainda</strong>Ao liberar no Fluig, o registro sai de Pendentes e aparece aqui.';
+    else empty.innerHTML = '<span class="em-ico">📁</span><strong>Nenhum incidente finalizado ainda</strong>Depois de conferido, o registro é finalizado e fica guardado aqui.';
   }
 
   const d = parseISO(state.today);
@@ -864,7 +1016,12 @@ function onTableAction(act, id) {
   if (act === 'postergar') return openPostergar(inc);
   if (act === 'excluir') return confirmDelete(inc);
   if (act === 'retomar') return upsert({ ...inc, status: 'pendente' }, 'Incidente retomado e devolvido para Pendentes.', { ...inc });
-  if (act === 'reabrir') return upsert({ ...inc, status: 'pendente', dataLiberacao: '', fluig: '', obsLiberacao: '' }, 'Incidente reaberto em Pendentes.', { ...inc });
+  if (act === 'reabrir') return upsert({ ...inc, status: 'pendente', dataLiberacao: '', obsLiberacao: '', liberadoPor: '', dataConferencia: '', conferidoPor: '', obsConferencia: '' }, 'Incidente reaberto em Pendentes.', { ...inc });
+  if (act === 'desconferir') return upsert({ ...inc, status: 'conferencia', dataConferencia: '', conferidoPor: '', obsConferencia: '' }, 'Voltou para A conferir.', { ...inc });
+  if (act === 'correcao') return openCorrecao(inc);
+  if (act === 'devolutiva') return openDevolutiva(inc);
+  if (act === 'conferir') return openConferir(inc, false);
+  if (act === 'devolver') return openConferir(inc, true);
 }
 
 function confirmDelete(inc) {
@@ -893,7 +1050,9 @@ function openIncident(inc) {
   $('iLocal').value = v.local || ''; $('iResp').value = v.responsavel || ''; $('iTipo').value = v.tipo || '';
   $('iPrazo').value = v.prazo || state.settings.prazoPadrao; $('iObs').value = v.observacao || '';
   $('iStatus').value = v.status || 'pendente';
-  $('iLibData').value = v.dataLiberacao || ''; $('iFluig').value = v.fluig || ''; $('iLibObs').value = v.obsLiberacao || '';
+  $('iLibData').value = v.dataLiberacao || ''; $('iFluig').value = v.fluig || ''; $('iLibObs').value = v.obsLiberacao || ''; $('iLibPor').value = v.liberadoPor || '';
+  $('iConfData').value = v.dataConferencia || ''; $('iConfPor').value = v.conferidoPor || ''; $('iConfObs').value = v.obsConferencia || '';
+  $('iCorrData').value = v.dataCorrecao || ''; $('iCorrPara').value = v.correcaoPara || ''; $('iCorrMotivo').value = v.motivoCorrecao || '';
   $('iPostMotivo').value = v.motivoPost || ''; $('iPostData').value = v.dataPost || ''; $('iPostNova').value = v.novaData || ''; $('iPostObs').value = v.obsPost || '';
   toggleStatusSets(); updateCalc();
   $('dlgIncident').showModal();
@@ -901,9 +1060,14 @@ function openIncident(inc) {
 }
 function toggleStatusSets() {
   const s = $('iStatus').value;
-  $('iLibSet').classList.toggle('hidden', s !== 'liberado');
+  const lib = s === 'liberado' || s === 'conferencia';
+  $('iLibSet').classList.toggle('hidden', !lib);
+  $('iConfSet').classList.toggle('hidden', s !== 'liberado');
+  $('iCorrSet').classList.toggle('hidden', s !== 'correcao');
   $('iPostSet').classList.toggle('hidden', s !== 'postergado');
-  if (s === 'liberado' && !$('iLibData').value) $('iLibData').value = state.today;
+  if (lib && !$('iLibData').value) $('iLibData').value = state.today;
+  if (s === 'liberado' && !$('iConfData').value) $('iConfData').value = state.today;
+  if (s === 'correcao' && !$('iCorrData').value) $('iCorrData').value = state.today;
   if (s === 'postergado' && !$('iPostData').value) $('iPostData').value = state.today;
 }
 function updateCalc() {
@@ -921,7 +1085,9 @@ function submitIncident(e) {
   const g = id => $(id).value.trim();
   const req = [['iDataInc', 'a data do incidente']];
   const s = g('iStatus');
-  if (s === 'liberado') req.push(['iLibData', 'a data da liberação']);
+  if (s === 'liberado' || s === 'conferencia') req.push(['iLibData', 'a data da liberação']);
+  if (s === 'liberado') req.push(['iConfData', 'a data da conferência']);
+  if (s === 'correcao') req.push(['iCorrMotivo', 'o que precisa ser corrigido']);
   if (s === 'postergado') req.push(['iPostMotivo', 'o motivo da postergação'], ['iPostNova', 'a nova data prevista']);
   for (const [id, nome] of req) {
     if (!g(id) && !(id === 'iDataEmail' && $(id).disabled)) { toast(`Informe ${nome}.`, true); $(id).focus(); return; }
@@ -934,13 +1100,16 @@ function submitIncident(e) {
     observacao: g('iObs'), status: s,
     dataLiberacao: g('iLibData'), fluig: g('iFluig'), obsLiberacao: g('iLibObs'),
     motivoPost: g('iPostMotivo'), dataPost: g('iPostData'), novaData: g('iPostNova'), obsPost: g('iPostObs'),
+    liberadoPor: g('iLibPor'), dataConferencia: g('iConfData'), conferidoPor: g('iConfPor'), obsConferencia: g('iConfObs'),
+    dataCorrecao: g('iCorrData'), correcaoPara: g('iCorrPara'), motivoCorrecao: g('iCorrMotivo'),
   });
   // A data do e-mail só muda na edição se o usuário marcar "Alterar data de envio do e-mail"
   if (!editing || !$('iDataEmail').disabled) inc.dataEmail = g('iDataEmail');
-  if (s !== 'liberado') inc.dataLiberacao = '';
+  if (s !== 'liberado' && s !== 'conferencia') inc.dataLiberacao = '';
+  if (s !== 'liberado') inc.dataConferencia = '';
   const prev = editing ? { ...editing } : null;
   $('dlgIncident').close();
-  const destino = { pendente: 'Pendentes', postergado: 'Postergados', liberado: 'Liberados' }[s];
+  const destino = VIEW_LABEL[VIEW_OF_STATUS[s]];
   upsert(inc, editing ? 'Alterações salvas.' : `Incidente salvo em ${destino}.`, prev);
 }
 
@@ -950,15 +1119,18 @@ function openLiberar(inc) {
   actionTarget = inc;
   $('libResumo').textContent = resumo(inc);
   $('lData').value = state.today; $('lFluig').value = inc.fluig || ''; $('lObs').value = inc.obsLiberacao || '';
+  $('lPor').value = inc.liberadoPor || ls.get('ci_last_liberador', '');
   $('dlgLiberar').showModal(); setTimeout(() => $('lFluig').focus(), 30);
 }
 function submitLiberar(e) {
   e.preventDefault();
   if (!$('lData').value) { toast('Informe a data da liberação.', true); return; }
   const prev = { ...actionTarget };
-  const inc = { ...actionTarget, status: 'liberado', dataLiberacao: $('lData').value, fluig: $('lFluig').value.trim(), obsLiberacao: $('lObs').value.trim() };
+  const por = $('lPor').value.trim();
+  if (por) ls.set('ci_last_liberador', por);
+  const inc = { ...actionTarget, status: 'conferencia', dataLiberacao: $('lData').value, fluig: $('lFluig').value.trim(), obsLiberacao: $('lObs').value.trim(), liberadoPor: por };
   $('dlgLiberar').close();
-  upsert(inc, 'Liberado no Fluig e movido para Liberados.', prev);
+  upsert(inc, 'Liberado no Fluig. Agora aguarda a conferência em “A conferir”.', prev);
 }
 function openEmail(inc) {
   actionTarget = inc;
@@ -995,6 +1167,80 @@ function submitPostergar(e) {
   const inc = { ...actionTarget, status: 'postergado', motivoPost: $('pMotivo').value.trim(), dataPost: $('pData').value || state.today, novaData: $('pNova').value, obsPost: $('pObs').value.trim() };
   $('dlgPostergar').close();
   upsert(inc, `Postergado até ${fmtBR(inc.novaData)}.`, prev);
+}
+
+/* ---------------- Correção ---------------- */
+function openCorrecao(inc) {
+  actionTarget = inc;
+  $('crResumo').textContent = resumo(inc);
+  $('crData').value = state.today; $('crPara').value = inc.responsavel || ''; $('crMotivo').value = '';
+  $('dlgCorrecao').showModal(); setTimeout(() => $('crMotivo').focus(), 30);
+}
+function submitCorrecao(e) {
+  e.preventDefault();
+  if (!$('crMotivo').value.trim()) { toast('Descreva o que precisa ser corrigido.', true); $('crMotivo').focus(); return; }
+  const prev = { ...actionTarget };
+  const inc = { ...actionTarget, status: 'correcao', dataCorrecao: $('crData').value || state.today, correcaoPara: $('crPara').value.trim(),
+    motivoCorrecao: $('crMotivo').value.trim(), dataDevolutiva: '', obsDevolutiva: '' };
+  $('dlgCorrecao').close();
+  upsert(inc, 'Enviado para correção. Aguardando a devolutiva.', prev);
+}
+function openDevolutiva(inc) {
+  actionTarget = inc;
+  $('dvResumo').textContent = resumo(inc) + (inc.motivoCorrecao ? ` — corrigir: ${inc.motivoCorrecao}` : '');
+  $('dvData').value = state.today; $('dvObs').value = ''; $('dvRecontar').checked = false;
+  updateDevCalc();
+  $('dlgDevolutiva').showModal(); setTimeout(() => $('dvObs').focus(), 30);
+}
+function devolutivaInc() {
+  const d = $('dvData').value || state.today;
+  return { ...actionTarget, status: 'pendente', dataDevolutiva: d, obsDevolutiva: $('dvObs').value.trim(),
+    inicioPrazo: $('dvRecontar').checked ? d : (actionTarget.inicioPrazo || '') };
+}
+function updateDevCalc() {
+  const x = info(devolutivaInc());
+  $('dvCalc').innerHTML = x.limite
+    ? `<span>Ao voltar para Pendentes: data limite <b>${fmtBR(x.limite)}</b></span><span>${pill(x.sit, x.sub)}</span>`
+    : `<span>${pill('semdata')}</span><span>Sem data de envio do e-mail: o prazo começa quando você registrar o envio.</span>`;
+}
+function submitDevolutiva(e) {
+  e.preventDefault();
+  const prev = { ...actionTarget };
+  const inc = devolutivaInc();
+  $('dlgDevolutiva').close();
+  const lim = calcLimite(baseDate(inc), inc.prazo);
+  upsert(inc, `Devolutiva registrada. Voltou para Pendentes${lim ? ` (limite ${fmtBR(lim)})` : ''}.`, prev);
+}
+
+/* ---------------- Conferência ---------------- */
+function openConferir(inc, devolver) {
+  actionTarget = inc;
+  const x = info(inc);
+  $('cfResumo').textContent = resumo(inc);
+  $('cfSum').innerHTML = [
+    ['Liberado em', fmtBR(inc.dataLiberacao)], ['Liberado por', esc(inc.liberadoPor) || '—'], ['Nº Fluig', esc(inc.fluig) || '—'],
+    ['Data limite', fmtBR(x.limite)], ['Prazo', x.noPrazo === undefined ? '—' : (x.noPrazo ? '<span class="ok-t">No prazo</span>' : '<span class="late-t">Fora do prazo</span>')],
+    ['Obs. da liberação', esc(inc.obsLiberacao) || '—'],
+  ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+  $('cfData').value = state.today; $('cfPor').value = ls.get('ci_last_conferente', ''); $('cfObs').value = '';
+  $('cfObsLabel').classList.toggle('req', devolver);
+  $('dlgConferir').showModal(); setTimeout(() => (devolver ? $('cfObs') : $('cfPor')).focus(), 30);
+}
+function conferir(aprovar) {
+  const obs = $('cfObs').value.trim(), por = $('cfPor').value.trim();
+  if (!aprovar && !obs) { toast('Escreva o motivo da devolução no campo Observação.', true); $('cfObsLabel').classList.add('req'); $('cfObs').focus(); return; }
+  if (por) ls.set('ci_last_conferente', por);
+  const prev = { ...actionTarget };
+  let inc;
+  if (aprovar) {
+    inc = { ...actionTarget, status: 'liberado', dataConferencia: $('cfData').value || state.today, conferidoPor: por, obsConferencia: obs };
+  } else {
+    const nota = `Devolvido na conferência (${fmtBR($('cfData').value || state.today)}): ${obs}`;
+    inc = { ...actionTarget, status: 'pendente', dataLiberacao: '', obsConferencia: nota,
+      observacao: actionTarget.observacao ? `${nota} | ${actionTarget.observacao}` : nota };
+  }
+  $('dlgConferir').close();
+  upsert(inc, aprovar ? 'Conferido e finalizado.' : 'Devolvido para Pendentes com o motivo na observação.', prev);
 }
 
 /* ---------------- Feriados e configurações ---------------- */
@@ -1152,6 +1398,8 @@ function parseDateCell(v) {
 }
 function mapStatus(txt, dataLib) {
   const n = norm(txt);
+  if (/conferenc|conferir/.test(n)) return 'conferencia';
+  if (/correc|corrigir/.test(n)) return 'correcao';
   if (/liberad|conclu|finaliz|encerrad|^ok$|^sim$/.test(n)) return 'liberado';
   if (/posterg|adiad/.test(n)) return 'postergado';
   if (!n && dataLib) return 'liberado';
@@ -1198,7 +1446,7 @@ function updateImportPreview() {
   $('impPreview').innerHTML = out.length ? `<table><thead><tr>${cols.map(c => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${out.slice(0, 6).map(i => `<tr>${cols.map(([k, , f]) => `<td>${esc(f ? f(i[k]) : (i[k] || '—'))}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '<div class="list-empty">Nenhuma linha para importar com a seleção atual.</div>';
   const semEmail = out.filter(i => !i.dataEmail).length;
   const st = s => out.filter(i => i.status === s).length;
-  $('impSummary').innerHTML = `<b>${plural(out.length, 'registro será importado', 'registros serão importados')}</b> (${st('pendente')} pendentes, ${st('liberado')} liberados, ${st('postergado')} postergados).` +
+  $('impSummary').innerHTML = `<b>${plural(out.length, 'registro será importado', 'registros serão importados')}</b> (${st('pendente')} pendentes, ${st('correcao')} em correção, ${st('postergado')} postergados, ${st('conferencia')} a conferir, ${st('liberado')} finalizados).` +
     (dup ? ` ${plural(dup, 'linha duplicada ignorada', 'linhas duplicadas ignoradas')}.` : '') +
     (vazias ? ` ${plural(vazias, 'linha sem dados ignorada', 'linhas sem dados ignoradas')}.` : '') +
     (semEmail ? `<br>⚠ ${plural(semEmail, 'registro está', 'registros estão')} sem data de envio do e-mail — ficarão como “Aguardando e-mail” até você registrar o envio.` : '') +
@@ -1219,8 +1467,9 @@ async function runImport() {
 async function openExport() {
   if (!(await ensureXLSX())) return;
   const n = v => filtered(v, false).length;
-  const scopes = [['atual', `Visualização atual com filtros (${{ pendentes: 'Pendentes', postergados: 'Postergados', liberados: 'Liberados' }[state.view]})`, filtered().length],
-    ['pendentes', 'Pendentes', n('pendentes')], ['liberados', 'Liberados', n('liberados')], ['postergados', 'Postergados', n('postergados')], ['todos', 'Todos os registros', state.incidents.length]];
+  const scopes = [['atual', `Visualização atual com filtros (${VIEW_LABEL[state.view]})`, filtered().length]]
+    .concat(Object.keys(VIEW_LABEL).map(v => [v, VIEW_LABEL[v], n(v)]))
+    .concat([['todos', 'Todos os registros', state.incidents.length]]);
   $('expScopes').innerHTML = scopes.map(([v, t, c], k) => `<label><input type="radio" name="expScope" value="${v}" ${k === 0 ? 'checked' : ''}> ${esc(t)}<small>${c}</small></label>`).join('');
   $('dlgExport').showModal();
 }
@@ -1230,23 +1479,26 @@ function doExport() {
   const list = scope === 'atual' ? filtered() : scope === 'todos' ? state.incidents.slice() : filtered(scope, false);
   if (!list.length) { toast('Não há registros nesse grupo para exportar.', true); return; }
   list.sort((a, b) => (a.dataIncidente || '').localeCompare(b.dataIncidente || ''));
-  const head = ['Data do incidente', 'Data de envio do e-mail', 'Local/Filial', 'Responsável', 'Tipo de incidente', 'Prazo (dias úteis)', 'Data limite', 'Dias úteis decorridos', 'Situação', 'Status', 'Observação', 'Data da liberação', 'Nº Fluig', 'Obs. liberação', 'Liberado no prazo', 'Motivo postergação', 'Data da postergação', 'Nova data prevista', 'Obs. postergação'];
-  const dateCols = [0, 1, 6, 11, 16, 17];
-  const statusTxt = { pendente: 'Pendente', liberado: 'Liberado', postergado: 'Postergado' };
+  const head = ['Data do incidente', 'Data de envio do e-mail', 'Local/Filial', 'Responsável', 'Tipo de incidente', 'Prazo (dias úteis)', 'Data limite', 'Dias úteis decorridos', 'Situação', 'Status', 'Observação', 'Data da liberação', 'Nº Fluig', 'Obs. liberação', 'Liberado no prazo', 'Motivo postergação', 'Data da postergação', 'Nova data prevista', 'Obs. postergação',
+    'Liberado por', 'Data da conferência', 'Conferido por', 'Obs. conferência', 'Enviado para correção em', 'Correção enviada para', 'O que corrigir', 'Data da devolutiva', 'Obs. devolutiva', 'Prazo recontado a partir de'];
+  const dateCols = [0, 1, 6, 11, 16, 17, 20, 23, 26, 28];
+  const statusTxt = STATUS_LABEL;
   const aoa = [head].concat(list.map(i => {
     const x = info(i);
     return [serial(i.dataIncidente), serial(i.dataEmail), i.local, i.responsavel, i.tipo, Number(i.prazo) || '', serial(x.limite), i.dataEmail ? x.dias : '',
       SIT[x.sit].label, statusTxt[i.status] || 'Pendente', i.observacao, serial(i.dataLiberacao), i.fluig, i.obsLiberacao,
-      x.noPrazo === undefined ? '' : (x.noPrazo ? 'Sim' : 'Não'), i.motivoPost, serial(i.dataPost), serial(i.novaData), i.obsPost];
+      x.noPrazo === undefined ? '' : (x.noPrazo ? 'Sim' : 'Não'), i.motivoPost, serial(i.dataPost), serial(i.novaData), i.obsPost,
+      i.liberadoPor, serial(i.dataConferencia), i.conferidoPor, i.obsConferencia, serial(i.dataCorrecao), i.correcaoPara, i.motivoCorrecao,
+      serial(i.dataDevolutiva), i.obsDevolutiva, serial(i.inicioPrazo)];
   }));
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   for (let r = 1; r < aoa.length; r++) dateCols.forEach(c => { const ref = XLSX.utils.encode_cell({ r, c }); if (ws[ref] && typeof ws[ref].v === 'number') ws[ref].z = 'dd/mm/yyyy'; });
   ws['!cols'] = head.map((h, c) => ({ wch: dateCols.includes(c) ? 13 : Math.min(40, Math.max(h.length + 2, 12)) }));
   ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: aoa.length - 1, c: head.length - 1 } }) };
   const wb = XLSX.utils.book_new();
-  const nomeAba = { atual: 'Filtrados', pendentes: 'Pendentes', liberados: 'Liberados', postergados: 'Postergados', todos: 'Todos' }[scope];
+  const nomeAba = scope === 'atual' ? 'Filtrados' : scope === 'todos' ? 'Todos' : VIEW_LABEL[scope];
   XLSX.utils.book_append_sheet(wb, ws, nomeAba);
-  XLSX.writeFile(wb, `controle-incidentes-${nomeAba.toLowerCase()}-${state.today}.xlsx`);
+  XLSX.writeFile(wb, `controle-incidentes-${norm(nomeAba).replace(/\s+/g, '-')}-${state.today}.xlsx`);
   $('dlgExport').close(); toast(`${plural(list.length, 'registro exportado', 'registros exportados')}.`);
 }
 
@@ -1375,6 +1627,13 @@ function bind() {
   $('formLiberar').addEventListener('submit', submitLiberar);
   $('formPostergar').addEventListener('submit', submitPostergar);
   $('formEmail').addEventListener('submit', submitEmail);
+  $('formCorrecao').addEventListener('submit', submitCorrecao);
+  $('formDevolutiva').addEventListener('submit', submitDevolutiva);
+  ['dvData', 'dvRecontar'].forEach(id => $(id).addEventListener('input', updateDevCalc));
+  $('dvRecontar').addEventListener('change', updateDevCalc);
+  $('cfAprovar').onclick = () => conferir(true);
+  $('cfDevolver').onclick = () => conferir(false);
+  $('formConferir').addEventListener('submit', e => { e.preventDefault(); conferir(true); });
   $('eData').addEventListener('input', updateEmailCalc);
 
   $('hAdd').onclick = () => {
