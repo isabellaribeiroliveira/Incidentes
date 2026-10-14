@@ -215,6 +215,12 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; }
 .empty .em-ico { font-size: 30px; display: block; margin-bottom: 8px; }
 .empty strong { display: block; font-size: 16px; color: var(--ink); margin-bottom: 4px; }
 
+.alert.conn-alert { background: var(--late-bg); color: var(--late); border-color: #f5c2c4; }
+.conn { border: none; background: none; padding: 0; cursor: pointer; font: inherit; font-size: 12px; }
+.conn.ok { color: var(--ok); } .conn.bad { color: var(--late); font-weight: 600; }
+.diag { padding: 10px 12px; border-radius: var(--r-s); margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+.diag.ok { background: var(--ok-bg); } .diag.bad { background: var(--late-bg); }
+.diag code { font-size: 12px; color: var(--ink-2); }
 .foot .pending { color: var(--today); font-weight: 600; }
 .foot { margin-top: 12px; font-size: 12px; color: var(--ink-3); display: flex; gap: 16px; flex-wrap: wrap; }
 
@@ -371,6 +377,7 @@ fieldset.extra .full { grid-column: 1 / -1; }
       <span class="st-name">Finalizados</span><span class="st-desc">conferidos e concluídos</span></button>
   </nav>
 
+  <div class="alert conn-alert hidden" id="alertConn" role="alert"></div>
   <div class="alert info hidden" id="modeInfo">👁 Modo consulta: você vê todos os registros, mas só o responsável pode alterar.</div>
   <div class="alert conf hidden" id="alertConf" role="status"></div>
   <div class="alert hidden" id="alertPost" role="status"></div>
@@ -412,7 +419,7 @@ fieldset.extra .full { grid-column: 1 / -1; }
     <div class="empty hidden" id="empty"></div>
   </main>
 
-  <footer class="foot"><span id="storageInfo"></span><span id="syncInfo" class="hidden">⟳ Atualizando…</span><span id="pendingInfo" class="pending hidden"></span></footer>
+  <footer class="foot"><button type="button" id="connInfo" class="conn" title="Testar conexão"></button><span id="storageInfo"></span><span id="syncInfo" class="hidden">⟳ Atualizando…</span><span id="pendingInfo" class="pending hidden"></span></footer>
 </div>
 
 <div class="menu hidden" id="rowMenu" role="menu"></div>
@@ -562,6 +569,16 @@ fieldset.extra .full { grid-column: 1 / -1; }
   </form>
 </dialog>
 
+<!-- ===== Teste de conexão ===== -->
+<dialog id="dlgDiag" class="small">
+  <div class="dlg">
+    <div class="dlg-head"><h2>Teste de conexão</h2><p>Verifica cada link do Google Apps Script configurado no app.</p></div>
+    <div class="dlg-body"><div id="dgList"></div>
+      <div class="note">Se todos derem ❌: no Apps Script, confira se o Code.gs está colado e salvo e faça <b>Implantar › Gerenciar implantações › ✏️ › Nova versão › Implantar</b>, com acesso “Qualquer pessoa” e executar como “Eu”.</div></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Fechar</button><button type="button" class="btn primary" id="btnDiag2">Testar de novo</button></div>
+  </div>
+</dialog>
+
 <!-- ===== Confirmação ===== -->
 <dialog id="dlgConfirm" class="small">
   <div class="dlg">
@@ -649,8 +666,8 @@ fieldset.extra .full { grid-column: 1 / -1; }
   window.CI_LOGO_URL = "";
   /* Links do App da Web do Google Apps Script. Pode ter mais de um: o primeiro que responder é usado. */
   window.CI_API_URLS = [
-    "https://script.google.com/macros/s/AKfycbzpa4KeaEKvFo2PX7x6hd8W5ejs0-8Ln6vVcJeHq_XchBq6svPBpSRB0cuEx1Oo7UWqhw/exec",
-    "https://script.google.com/macros/s/AKfycbzpa4KeaEKvFo2PX7x6hd8W5ejs0-8Ln6vVcJeHq_XchBq6svPBpSRB0cuEx1Oo7UWqhw/exec"
+    "https://script.google.com/macros/s/AKfycbxttxZln0TeeR3Qg6Y_ljvoN_1c7Dj0mA90V6gP8_8ok8cHZymgbqsDtIar21dpeI-vkw/exec",
+    "https://script.google.com/macros/s/AKfycbyXwzwzEl37q1oSCkxvl65ywupmEyhK6vuVFPJ138Rua5Dd26T0m-nn5Dw0Of9F3CjDrw/exec"
   ];
 </script>
 <script>
@@ -1685,11 +1702,54 @@ async function loadAll(showSpinner = true, silent = false) {
   try {
     const d = await Store.load();
     applyData(d); saveSnapshot(d);
+    setConn(true);
   } catch (e) {
     console.error(e);
-    if (!silent) toast('Não foi possível carregar os dados. ' + ((e && e.message) || 'Recarregue a página.'), true);
+    setConn(false);
   }
   setSyncing(false); showLoading(false); render();
+}
+
+/* ---------------- Situação da conexão com a planilha ---------------- */
+let lastSync = null;
+function setConn(ok) {
+  if (MODE === 'local') return;
+  if (ok) lastSync = new Date();
+  const bar = $('alertConn');
+  bar.classList.toggle('hidden', ok);
+  bar.innerHTML = '<span><b>⚠ Sem conexão com a planilha Google.</b> O que for lançado agora fica guardado neste computador e é enviado quando a conexão voltar, mas <b>ainda não aparece para as outras pessoas</b>.</span><button class="btn" id="btnDiag">Testar conexão</button>';
+  const el = $('connInfo');
+  el.className = ok ? 'conn ok' : 'conn bad';
+  el.textContent = ok ? `● Conectado à planilha • atualizado às ${lastSync.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '● Sem conexão com a planilha';
+}
+/** Testa cada link com JSONP (funciona mesmo quando o navegador bloqueia a resposta) */
+function pingUrl(url) {
+  return new Promise(res => {
+    const cb = 'ciPing' + Math.random().toString(36).slice(2);
+    const sc = document.createElement('script');
+    let done = false;
+    const fin = r => { if (done) return; done = true; try { delete window[cb]; } catch (e) { window[cb] = undefined; } sc.remove(); res(r); };
+    window[cb] = d => fin({ ok: true, d });
+    sc.onerror = () => fin({ ok: false, why: 'O link não respondeu. Verifique a internet ou se o link está correto.' });
+    sc.onload = () => setTimeout(() => fin({ ok: false, why: 'O Google respondeu, mas sem o código do app. A implantação está sem o Code.gs atualizado, ou o acesso não está como “Qualquer pessoa” (pede login).' }), 400);
+    setTimeout(() => fin({ ok: false, why: 'Tempo esgotado sem resposta.' }), 15000);
+    sc.src = url + (url.includes('?') ? '&' : '?') + 'ping=1&callback=' + cb + '&t=' + Date.now();
+    document.head.appendChild(sc);
+  });
+}
+async function diagnose() {
+  $('dgList').innerHTML = '<div class="list-empty">Testando…</div>';
+  $('dlgDiag').showModal();
+  if (MODE === 'gas') { $('dgList').innerHTML = '<div class="list-row">✅ Aberto pelo link do Google: a comunicação é direta com a planilha.</div>'; return; }
+  const out = [];
+  for (const [k, url] of API_URLS.entries()) {
+    const r = await pingUrl(url);
+    const id = url.split('/s/')[1].slice(0, 14) + '…';
+    out.push(`<div class="diag ${r.ok ? 'ok' : 'bad'}"><b>${r.ok ? '✅' : '❌'} Link ${k + 1}</b> <code>${esc(id)}</code><br>` +
+      (r.ok ? `Funcionando • planilha “${esc(r.d.planilha)}” • versão do script ${esc(r.d.versao)}` : esc(r.why)) + '</div>');
+    $('dgList').innerHTML = out.join('');
+  }
+  if (!API_URLS.length) $('dgList').innerHTML = '<div class="list-empty">Nenhum link configurado no index.html (CI_API_URLS).</div>';
 }
 
 /** Abre na hora: usa os dados que vieram junto com a página (Google) ou a última cópia (GitHub) */
@@ -1704,7 +1764,7 @@ function start() {
   if (outbox.length) setTimeout(() => flushOutbox(), 1500);
   const ini = MODE === 'gas' ? readInitial() : null;
   if (ini) {
-    applyData(ini); saveSnapshot(ini); render();
+    applyData(ini); saveSnapshot(ini); setConn(true); render();
     return; // dados já frescos; a atualização automática segue a cada minuto
   }
   const snap = MODE !== 'local' ? ls.get(SNAP_KEY, null) : null;
@@ -1830,6 +1890,9 @@ function bind() {
     loadAll(false, true);
   }, outbox.length ? 20 * 1000 : 60 * 1000);
   window.addEventListener('online', () => flushOutbox());
+  document.body.addEventListener('click', e => { if (e.target.closest('#btnDiag')) diagnose(); });
+  $('connInfo').addEventListener('click', diagnose);
+  $('btnDiag2').onclick = diagnose;
   updatePending();
 
   // Situação muda sozinha com a virada do dia
