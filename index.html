@@ -12,104 +12,138 @@
 /* =========================================================
    Controle de Incidentes — visual
    ========================================================= */
+/* ================= CORES DA MARCA (troque aqui) ================= */
 :root {
-  --bg: #f3f5f8;
+  --brand: #0b2f6b;          /* azul-marinho principal */
+  --brand-2: #1552c4;        /* azul de destaque / botões */
+  --brand-3: #e8eefb;        /* azul bem claro */
+
+  /* cores de cada etapa */
+  --c-pend: #1552c4;  --c-pend-bg: #e8eefb;
+  --c-corr: #d97706;  --c-corr-bg: #fff4e0;
+  --c-post: #7c3aed;  --c-post-bg: #f1ebfe;
+  --c-conf: #0891b2;  --c-conf-bg: #e2f6fa;
+  --c-lib:  #15803d;  --c-lib-bg:  #e6f5ec;
+
+  --bg: #eef2f7;
   --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --ink: #0f1d2b;
-  --ink-2: #475569;
-  --ink-3: #8592a3;
-  --line: #e4e8ee;
-  --line-2: #d3dae3;
-  --accent: #0b6b7d;
-  --accent-2: #0a5968;
-  --accent-soft: #e4f2f4;
+  --surface-2: #f7f9fc;
+  --ink: #0f1d2e;
+  --ink-2: #46556a;
+  --ink-3: #8090a5;
+  --line: #e2e7ef;
+  --line-2: #cfd7e3;
+  --accent: var(--brand-2);
+  --accent-2: var(--brand);
+  --accent-soft: var(--brand-3);
 
-  --ok: #15803d;      --ok-bg: #e8f6ee;
-  --today: #c2570c;   --today-bg: #fff1e3;
+  --ok: #15803d;      --ok-bg: #e6f5ec;
+  --today: #c2570c;   --today-bg: #fff0e1;
   --late: #c0262d;    --late-bg: #fdecec;
-  --hold: #6043c9;    --hold-bg: #f0ecfd;
+  --hold: #7c3aed;    --hold-bg: #f1ebfe;
   --muted: #64748b;   --muted-bg: #eef1f5;
-  --corr: #a35b00;    --corr-bg: #fff5d6;
-  --conf: #1d5bd8;    --conf-bg: #e9f0fe;
+  --corr: #b45309;    --corr-bg: #fff4e0;
+  --conf: #0e7490;    --conf-bg: #e2f6fa;
 
-  --r-s: 8px;
-  --r-m: 12px;
-  --r-l: 16px;
-  --shadow: 0 1px 2px rgba(15, 29, 43, .04), 0 4px 16px rgba(15, 29, 43, .05);
+  --stage: var(--c-pend); --stage-bg: var(--c-pend-bg);
+
+  --r-s: 8px; --r-m: 12px; --r-l: 16px;
+  --shadow: 0 1px 2px rgba(15, 29, 46, .05), 0 6px 20px rgba(15, 29, 46, .06);
   --font: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
 }
+body[data-view="pendentes"]   { --stage: var(--c-pend); --stage-bg: var(--c-pend-bg); }
+body[data-view="correcao"]    { --stage: var(--c-corr); --stage-bg: var(--c-corr-bg); }
+body[data-view="postergados"] { --stage: var(--c-post); --stage-bg: var(--c-post-bg); }
+body[data-view="conferencia"] { --stage: var(--c-conf); --stage-bg: var(--c-conf-bg); }
+body[data-view="liberados"]   { --stage: var(--c-lib);  --stage-bg: var(--c-lib-bg); }
+
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body { font-family: var(--font); font-size: 14px; line-height: 1.45; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
 button, input, select, textarea { font: inherit; color: inherit; }
 .hidden { display: none !important; }
-.num, td.date, .tab-n, .stat-n { font-variant-numeric: tabular-nums; }
+.num, td.date, .tab-n, .chip-n { font-variant-numeric: tabular-nums; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.app { max-width: 1440px; margin: 0 auto; padding: 22px 24px 32px; }
-
-/* ---------- Topo ---------- */
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-mark { width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(140deg, #0e7f93, #0a5968); color: #fff; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(11, 107, 125, .3); }
-.brand h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
-.brand-sub { margin: 1px 0 0; font-size: 13px; color: var(--ink-3); }
-.top-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+/* ---------- Faixa da marca ---------- */
+.brandbar { background: radial-gradient(1200px 300px at 85% -40%, rgba(255,255,255,.14), transparent 60%), linear-gradient(120deg, var(--brand) 0%, #0f3f8f 60%, var(--brand-2) 100%); color: #fff; padding: 22px 0 70px; position: relative; overflow: hidden; }
+.brandbar::after { content: ""; position: absolute; right: -60px; bottom: -120px; width: 380px; height: 260px; border-radius: 50%; border: 36px solid rgba(255,255,255,.06); }
+.brandbar-in { max-width: 1440px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; position: relative; z-index: 1; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-logo { width: 48px; height: 48px; border-radius: 12px; background: #fff; color: var(--brand); display: grid; place-items: center; font-weight: 800; font-size: 24px; letter-spacing: -.02em; box-shadow: 0 6px 18px rgba(0,0,0,.18); overflow: hidden; }
+.brand-logo.has-img { width: auto; min-width: 48px; max-width: 160px; padding: 6px 10px; }
+.brand-logo img { max-height: 36px; max-width: 140px; display: block; }
+.brand h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.brand-sub { margin: 2px 0 0; font-size: 13px; color: rgba(255,255,255,.75); }
+.top-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.app { max-width: 1440px; margin: -52px auto 0; padding: 0 24px 32px; position: relative; z-index: 2; }
 
 /* ---------- Botões ---------- */
-.btn { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; border: 1px solid var(--line-2); border-radius: var(--r-s); background: var(--surface); cursor: pointer; white-space: nowrap; font-weight: 500; transition: background .12s, border-color .12s, box-shadow .12s; }
-.btn:hover { border-color: #b8c2cf; background: var(--surface-2); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 2px 6px rgba(11, 107, 125, .25); }
-.btn.primary:hover { background: var(--accent-2); }
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; border: 1px solid var(--line-2); border-radius: var(--r-s); background: var(--surface); cursor: pointer; white-space: nowrap; font-weight: 500; transition: background .12s, border-color .12s, box-shadow .12s, transform .12s; }
+.btn:hover { border-color: #b4c0d0; background: var(--surface-2); }
+.btn.primary { background: var(--brand-2); border-color: var(--brand-2); color: #fff; font-weight: 600; box-shadow: 0 3px 10px rgba(21, 82, 196, .3); }
+.btn.primary:hover { background: var(--brand); border-color: var(--brand); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
-.btn.ghost:hover { background: rgba(15, 29, 43, .06); }
-.btn.warn { background: var(--corr-bg); border-color: #f1d58a; color: var(--corr); font-weight: 600; }
-.btn.warn:hover { background: #ffeeb8; }
-.foot-gap { flex: 1; }
+.btn.ghost:hover { background: rgba(15, 29, 46, .06); }
+.btn.glass { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.22); color: #fff; }
+.btn.glass:hover { background: rgba(255,255,255,.22); }
 .btn.danger { background: var(--late); border-color: var(--late); color: #fff; font-weight: 600; }
+.btn.warn { background: var(--corr-bg); border-color: #f3d39a; color: var(--corr); font-weight: 600; }
+.btn.warn:hover { background: #ffe9c2; }
+.foot-gap { flex: 1; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
-.badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; display: inline-grid; place-items: center; }
+.badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--brand-2); color: #fff; font-size: 11px; font-weight: 600; display: inline-grid; place-items: center; }
 
-/* ---------- Contadores ---------- */
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-.stat { position: relative; display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 14px 16px 13px 18px; border-radius: var(--r-m); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; overflow: hidden; transition: transform .12s, box-shadow .12s, border-color .12s; }
-.stat::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c); }
-.stat:hover { transform: translateY(-1px); }
-.stat-ico { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--c); background: var(--cbg); }
-.stat.zero .stat-ico { color: var(--ink-3); background: var(--muted-bg); }
-.stat-n { font-size: 28px; font-weight: 700; line-height: 1.1; color: var(--c); }
-.stat-l { font-size: 13px; color: var(--ink-2); font-weight: 500; }
-.stat.active { border-color: var(--c); background: var(--cbg); }
-.stat.zero .stat-n { color: var(--ink-3); }
-.stat.late { --c: var(--late); --cbg: var(--late-bg); }
-.stat.today { --c: var(--today); --cbg: var(--today-bg); }
-.stat.ok { --c: var(--ok); --cbg: var(--ok-bg); }
-.stat.wait { --c: var(--muted); --cbg: var(--muted-bg); }
+/* ---------- Etapas (divisão por cores) ---------- */
+.pipeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tab { --c: var(--c-pend); --cb: var(--c-pend-bg); position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; padding: 14px 16px 13px; border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: var(--r-m); background: var(--surface); box-shadow: var(--shadow); cursor: pointer; transition: transform .14s, box-shadow .14s, background .14s; }
+.tab:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(15, 29, 46, .1); }
+.st-corr { --c: var(--c-corr); --cb: var(--c-corr-bg); }
+.st-post { --c: var(--c-post); --cb: var(--c-post-bg); }
+.st-conf { --c: var(--c-conf); --cb: var(--c-conf-bg); }
+.st-lib  { --c: var(--c-lib);  --cb: var(--c-lib-bg); }
+.st-top { display: flex; width: 100%; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.st-ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--cb); color: var(--c); }
+.tab .tab-n { font-size: 28px; font-weight: 700; line-height: 1; color: var(--c); }
+.tab .tab-n.hot { position: relative; }
+.tab .tab-n.hot::after { content: ""; position: absolute; top: -2px; right: -10px; width: 9px; height: 9px; border-radius: 50%; background: var(--late); box-shadow: 0 0 0 3px var(--surface); }
+.st-name { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+.st-desc { font-size: 12px; color: var(--ink-3); }
+.tab[aria-selected="true"] { background: var(--c); border-color: var(--c); box-shadow: 0 10px 24px color-mix(in srgb, var(--c) 35%, transparent); }
+.tab[aria-selected="true"] .st-ico { background: rgba(255,255,255,.2); color: #fff; }
+.tab[aria-selected="true"] .tab-n, .tab[aria-selected="true"] .st-name { color: #fff; }
+.tab[aria-selected="true"] .st-desc { color: rgba(255,255,255,.8); }
+.tab[aria-selected="true"] .tab-n.hot::after { box-shadow: 0 0 0 3px var(--c); }
 
-.alert { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 11px 16px; margin-bottom: 14px; border-radius: var(--r-m); background: var(--hold-bg); color: var(--hold); border: 1px solid #ddd4fa; font-weight: 500; }
-.alert.conf { background: var(--conf-bg); color: var(--conf); border-color: #cddcfb; }
-.alert.info { background: var(--accent-soft); color: var(--accent-2); border-color: #c5e1e6; }
+.alert { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 11px 16px; margin-bottom: 14px; border-radius: var(--r-m); background: var(--hold-bg); color: var(--hold); border: 1px solid #ddd0fb; font-weight: 500; }
+.alert.conf { background: var(--conf-bg); color: var(--conf); border-color: #bfe7f0; }
+.alert.info { background: var(--brand-3); color: var(--brand); border-color: #cbd8f5; }
 
-/* ---------- Painel principal ---------- */
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); box-shadow: var(--shadow); overflow: hidden; }
-.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
-.tabbar { display: flex; align-items: center; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: thin; }
-.tab { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 50px; padding: 0 14px; border: none; background: transparent; cursor: pointer; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
-.tab:hover { color: var(--ink); }
-.tab::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: transparent; }
-.tab[aria-selected="true"] { color: var(--ink); font-weight: 600; }
-.tab[aria-selected="true"]::after { background: var(--accent); }
-.tab-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.d-pend { background: var(--accent); } .d-corr { background: #e0a100; } .d-post { background: var(--hold); } .d-conf { background: var(--conf); } .d-lib { background: var(--ok); }
-.tab .tab-n { min-width: 22px; padding: 1px 7px; border-radius: 10px; background: var(--muted-bg); color: var(--ink-2); font-size: 12px; font-weight: 600; text-align: center; }
-.tab[aria-selected="true"] .tab-n { background: var(--accent-soft); color: var(--accent-2); }
-.tab .tab-n.hot { background: var(--conf); color: #fff; }
-.tab-sep { color: var(--line-2); font-size: 18px; padding: 0 2px; user-select: none; }
-.search { flex: 1 1 220px; position: relative; }
+/* ---------- Painel ---------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--stage); border-radius: var(--r-l); box-shadow: var(--shadow); overflow: hidden; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 16px 18px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, var(--stage-bg), var(--surface) 140%); }
+.panel-title h2 { margin: 0; font-size: 18px; font-weight: 700; color: var(--stage); letter-spacing: -.01em; }
+.panel-title p { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-2); }
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1 1 520px; justify-content: flex-end; }
+.search { flex: 1 1 240px; max-width: 460px; position: relative; }
 .search input { width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid var(--line-2); border-radius: var(--r-s); background: var(--surface); }
-.search input:focus { border-color: var(--accent); outline: 3px solid var(--accent-soft); }
+.search input:focus { border-color: var(--stage); outline: 3px solid var(--stage-bg); }
 .search svg { position: absolute; left: 12px; top: 11.5px; color: var(--ink-3); }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+.chip { --c: var(--muted); --cb: var(--muted-bg); display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px 0 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 500; color: var(--ink-2); transition: background .12s, border-color .12s; }
+.chip:hover { border-color: var(--c); }
+.chip-ico { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--cb); color: var(--c); }
+.chip-ico svg { width: 16px; height: 16px; }
+.chip-n { font-weight: 700; font-size: 16px; color: var(--c); }
+.chip.zero .chip-n { color: var(--ink-3); }
+.chip.active { background: var(--c); border-color: var(--c); color: #fff; }
+.chip.active .chip-n { color: #fff; }
+.chip.active .chip-ico { background: rgba(255,255,255,.22); color: #fff; }
+.chip.late { --c: var(--late); --cb: var(--late-bg); }
+.chip.today { --c: var(--today); --cb: var(--today-bg); }
+.chip.ok { --c: var(--ok); --cb: var(--ok-bg); }
+.chip.wait { --c: var(--muted); --cb: var(--muted-bg); }
 
 .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; padding: 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
 .filters label, .field label { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; font-weight: 500; }
@@ -123,12 +157,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .sheet-scroll { overflow: auto; max-height: calc(100vh - 300px); min-height: 220px; }
 table.grid { width: 100%; border-collapse: separate; border-spacing: 0; }
 .grid th, .grid td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; white-space: nowrap; }
-.grid thead th { position: sticky; top: 0; z-index: 2; background: var(--surface-2); font-size: 11.5px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; cursor: pointer; user-select: none; }
+.grid thead th { position: sticky; top: 0; z-index: 2; background: var(--surface-2); border-bottom: 1px solid var(--line-2); font-size: 11.5px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; cursor: pointer; user-select: none; }
 .grid thead th:hover { color: var(--ink-2); }
 .grid thead th.nosort { cursor: default; }
-.grid thead th .arrow { color: var(--accent); margin-left: 3px; }
+.grid thead th .arrow { color: var(--stage); margin-left: 3px; }
 .grid tbody tr { cursor: pointer; transition: background .1s; }
-.grid tbody tr:hover td { background: #f6f9fb; }
+.grid tbody tr:hover td { background: color-mix(in srgb, var(--stage-bg) 55%, #fff); }
 .grid tbody tr:last-child td { border-bottom: none; }
 .grid tbody tr td:first-child { box-shadow: inset 4px 0 0 var(--row, transparent); padding-left: 18px; }
 .grid tr.s-atrasado { --row: var(--late); }
@@ -166,8 +200,8 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; }
 .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
 .act { height: 32px; padding: 0 12px; border-radius: var(--r-s); border: 1px solid var(--line-2); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .act:hover { border-color: #b8c2cf; }
-.act.go { background: var(--accent); border-color: var(--accent); color: #fff; }
-.act.go:hover { background: var(--accent-2); }
+.act.go { background: var(--stage); border-color: var(--stage); color: #fff; }
+.act.go:hover { filter: brightness(.92); }
 .act.more { width: 32px; padding: 0; font-size: 18px; line-height: 1; color: var(--ink-2); letter-spacing: 1px; }
 
 .menu { position: fixed; z-index: 40; min-width: 180px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); box-shadow: 0 12px 32px rgba(15, 29, 43, .16); }
@@ -249,25 +283,30 @@ fieldset.extra .full { grid-column: 1 / -1; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* ---------- Tablet ---------- */
-@media (max-width: 1000px) {
-  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1100px) {
+  .pipeline { grid-template-columns: repeat(5, minmax(150px, 1fr)); overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+  .tab { scroll-snap-align: start; }
 }
 
 /* ---------- Celular: cada linha vira uma ficha ---------- */
 @media (max-width: 760px) {
-  .app { padding: 14px 12px 28px; }
-  .brand h1 { font-size: 17px; }
-  .brand-mark { width: 36px; height: 36px; }
+  .brandbar { padding: 16px 0 62px; }
+  .brandbar-in { padding: 0 12px; }
+  .brand-logo { width: 40px; height: 40px; font-size: 20px; }
+  .brand h1 { font-size: 18px; }
   .top-actions .btn .lbl { display: none; }
-  .top-actions .btn { padding: 0 10px; }
-  .stats { gap: 8px; }
-  .stat { padding: 11px 12px 10px 15px; }
-  .stat-n { font-size: 22px; }
-  .toolbar { padding: 10px; }
-  .tabbar { padding: 0 4px; }
-  .tab { height: 46px; padding: 0 10px; font-size: 13px; }
-  .tab-sep { display: none; }
-  .stat-ico { width: 28px; height: 28px; top: 10px; right: 10px; }
+  .top-actions .btn { padding: 0 11px; }
+  .app { padding: 0 12px 28px; margin-top: -48px; }
+  .pipeline { grid-template-columns: repeat(5, 140px); gap: 8px; }
+  .tab { padding: 11px 12px 10px; }
+  .tab .tab-n { font-size: 22px; }
+  .st-ico { width: 28px; height: 28px; }
+  .st-desc { display: none; }
+  .panel-head { padding: 12px; }
+  .toolbar { flex-basis: 100%; }
+  .search { max-width: none; }
+  .chips { padding: 10px 12px; gap: 6px; }
+  .chip { height: 34px; padding: 0 10px 0 6px; font-size: 13px; }
   .sum { grid-template-columns: 1fr 1fr; }
   .foot-gap { display: none; }
   #btnNew { flex: 1; justify-content: center; }
@@ -291,53 +330,69 @@ fieldset.extra .full { grid-column: 1 / -1; }
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="topbar">
+<header class="brandbar">
+  <div class="brandbar-in">
     <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      </div>
+      <div class="brand-logo" id="brandLogo" aria-hidden="true">U</div>
       <div>
         <h1>Controle de Incidentes</h1>
-        <p class="brand-sub" id="todayInfo"></p>
+        <p class="brand-sub"><span id="brandName">Univale</span> · <span id="todayInfo"></span></p>
       </div>
     </div>
     <div class="top-actions">
-      <button class="btn ghost" id="btnImport" title="Importar planilha (.xlsx)">
+      <button class="btn glass" id="btnImport" title="Importar planilha (.xlsx)">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg><span class="lbl">Importar</span></button>
-      <button class="btn ghost" id="btnExport" title="Exportar para Excel">
+      <button class="btn glass" id="btnExport" title="Exportar para Excel">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 15V3m0 0L8 7m4-4l4 4M4 21h16"/></svg><span class="lbl">Exportar</span></button>
-      <button class="btn ghost" id="btnSettings" title="Feriados e configurações">
+      <button class="btn glass" id="btnSettings" title="Feriados e configurações">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span class="lbl">Feriados</span></button>
-      <button class="btn hidden" id="btnLock" title="Senha de edição">🔒 <span class="lbl">Entrar para editar</span></button>
+      <button class="btn glass hidden" id="btnLock" title="Senha de edição">🔒 <span class="lbl">Entrar para editar</span></button>
     </div>
-  </header>
+  </div>
+</header>
+
+<div class="app">
+  <nav class="pipeline seg" role="tablist" aria-label="Etapas do fluxo">
+    <button class="tab st-pend" role="tab" data-view="pendentes" aria-selected="true">
+      <span class="st-top"><span class="st-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg></span><span class="tab-n" id="nPend">0</span></span>
+      <span class="st-name">Pendentes</span><span class="st-desc">aguardando análise</span></button>
+    <button class="tab st-corr" role="tab" data-view="correcao" aria-selected="false">
+      <span class="st-top"><span class="st-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span><span class="tab-n" id="nCorr">0</span></span>
+      <span class="st-name">Em correção</span><span class="st-desc">aguardando devolutiva</span></button>
+    <button class="tab st-post" role="tab" data-view="postergados" aria-selected="false">
+      <span class="st-top"><span class="st-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg></span><span class="tab-n" id="nPost">0</span></span>
+      <span class="st-name">Postergados</span><span class="st-desc">adiados com nova data</span></button>
+    <button class="tab st-conf" role="tab" data-view="conferencia" aria-selected="false">
+      <span class="st-top"><span class="st-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8.5 11l2 2 3.5-4"/></svg></span><span class="tab-n" id="nConf">0</span></span>
+      <span class="st-name">A conferir</span><span class="st-desc">liberados no Fluig</span></button>
+    <button class="tab st-lib" role="tab" data-view="liberados" aria-selected="false">
+      <span class="st-top"><span class="st-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span><span class="tab-n" id="nLib">0</span></span>
+      <span class="st-name">Finalizados</span><span class="st-desc">conferidos e concluídos</span></button>
+  </nav>
 
   <div class="alert info hidden" id="modeInfo">👁 Modo consulta: você vê todos os registros, mas só o responsável pode alterar.</div>
-  <section class="stats" id="counters" aria-label="Contadores de situação"></section>
   <div class="alert conf hidden" id="alertConf" role="status"></div>
   <div class="alert hidden" id="alertPost" role="status"></div>
 
   <main class="panel">
-    <nav class="tabbar seg" role="tablist" aria-label="Etapas">
-      <button class="tab" role="tab" data-view="pendentes" aria-selected="true"><span class="tab-dot d-pend"></span>Pendentes <span class="tab-n" id="nPend">0</span></button>
-      <button class="tab" role="tab" data-view="correcao" aria-selected="false"><span class="tab-dot d-corr"></span>Em correção <span class="tab-n" id="nCorr">0</span></button>
-      <button class="tab" role="tab" data-view="postergados" aria-selected="false"><span class="tab-dot d-post"></span>Postergados <span class="tab-n" id="nPost">0</span></button>
-      <span class="tab-sep" aria-hidden="true">›</span>
-      <button class="tab" role="tab" data-view="conferencia" aria-selected="false"><span class="tab-dot d-conf"></span>A conferir <span class="tab-n" id="nConf">0</span></button>
-      <span class="tab-sep" aria-hidden="true">›</span>
-      <button class="tab" role="tab" data-view="liberados" aria-selected="false"><span class="tab-dot d-lib"></span>Finalizados <span class="tab-n" id="nLib">0</span></button>
-    </nav>
-    <div class="toolbar">
-      <div class="search">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="search" type="search" placeholder="Pesquisar local, responsável, tipo, nº Fluig…" aria-label="Pesquisar">
+    <div class="panel-head">
+      <div class="panel-title">
+        <h2 id="stageTitle">Pendentes</h2>
+        <p id="stageDesc"></p>
       </div>
-      <button class="btn" id="btnFilters" aria-expanded="false">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>Filtros <span class="badge hidden" id="filterBadge"></span></button>
-      <button class="btn primary" id="btnNew">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Novo incidente</button>
+      <div class="toolbar">
+        <div class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" type="search" placeholder="Pesquisar local, responsável, tipo, nº Fluig…" aria-label="Pesquisar">
+        </div>
+        <button class="btn" id="btnFilters" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>Filtros <span class="badge hidden" id="filterBadge"></span></button>
+        <button class="btn primary" id="btnNew">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Novo incidente</button>
+      </div>
     </div>
+
+    <section class="chips" id="counters" aria-label="Situação dos pendentes"></section>
 
     <div class="filters hidden" id="filters">
       <div><label for="fMesBase">Mês pela data</label>
@@ -588,7 +643,10 @@ fieldset.extra .full { grid-column: 1 / -1; }
 <script type="application/json" id="ci-initial"><?!= inicial ?></script>
 <script>
   /* Link do App da Web do Google Apps Script (usado quando a página é aberta pelo GitHub) */
-  window.CI_API_URL = "https://script.google.com/macros/s/AKfycbzpa4KeaEKvFo2PX7x6hd8W5ejs0-8Ln6vVcJeHq_XchBq6svPBpSRB0cuEx1Oo7UWqhw/exec";
+  /* Nome da empresa no topo e, se quiser, o link (https://...) de uma imagem da logo */
+  window.CI_EMPRESA = "Univale";
+  window.CI_LOGO_URL = "";
+  window.CI_API_URL = "https://script.google.com/macros/s/AKfycbyXwzwzEl37q1oSCkxvl65ywupmEyhK6vuVFPJ138Rua5Dd26T0m-nn5Dw0Of9F3CjDrw/exec";
 </script>
 <script>
 /* =========================================================
@@ -943,7 +1001,7 @@ function render() {
   const isPend = state.view === 'pendentes';
   $('counters').classList.toggle('hidden', !isPend);
   $('counters').innerHTML = [['atrasado', 'late', 'Atrasados', 'Atrasado'], ['hoje', 'today', 'Liberar hoje', 'Liberar hoje'], ['emdia', 'ok', 'Em dia', 'Em dia'], ['semdata', 'wait', 'Aguardando e-mail', 'Aguardando e-mail']]
-    .map(([k, cls, p, s]) => { const n = cnt(k); return `<button class="stat ${cls} ${n ? '' : 'zero'} ${state.filters.sit === k ? 'active' : ''}" data-sit="${k}" title="Filtrar: ${SIT[k].label}" aria-pressed="${state.filters.sit === k}"><span class="stat-n">${n}</span><span class="stat-ico">${ICON[k]}</span><span class="stat-l">${n === 1 ? s : p}</span></button>`; }).join('');
+    .map(([k, cls, p, s]) => { const n = cnt(k); return `<button class="chip ${cls} ${n ? '' : 'zero'} ${state.filters.sit === k ? 'active' : ''}" data-sit="${k}" title="Filtrar: ${SIT[k].label}" aria-pressed="${state.filters.sit === k}"><span class="chip-ico">${ICON[k]}</span><span class="chip-n">${n}</span><span class="chip-l">${n === 1 ? s : p}</span></button>`; }).join('');
 
   const al = $('alertPost');
   al.classList.toggle('hidden', !(tratar && state.view !== 'postergados'));
@@ -952,6 +1010,15 @@ function render() {
   ac.classList.toggle('hidden', !(nConf && state.view !== 'conferencia' && state.canEdit));
   ac.innerHTML = `<span>🔍 ${nConf === 1 ? '1 liberação aguarda' : `${nConf} liberações aguardam`} a sua conferência para ser finalizada.</span><button class="btn" data-goto="conferencia">Conferir agora</button>`;
 
+  document.body.dataset.view = state.view;
+  $('stageTitle').textContent = VIEW_LABEL[state.view];
+  $('stageDesc').textContent = {
+    pendentes: `Aguardando análise e liberação no Fluig • prazo de ${state.settings.prazoPadrao} dias úteis a partir do e-mail`,
+    correcao: 'Enviados para correção • aguardando a devolutiva',
+    postergados: 'Adiados com nova data prevista • não contam como atrasados',
+    conferencia: 'Liberados no Fluig • confira para finalizar ou devolva',
+    liberados: 'Conferidos e concluídos',
+  }[state.view];
   const V = VIEWS[state.view];
   const sort = state.sort.key ? state.sort : V.sort;
   const rows = filtered().map(i => ({ i, x: info(i) }));
@@ -1581,7 +1648,16 @@ async function submitPin(e) {
 }
 
 /* ---------------- Eventos ---------------- */
+function applyBrand() {
+  if (typeof window.CI_EMPRESA === 'string' && window.CI_EMPRESA) $('brandName').textContent = window.CI_EMPRESA;
+  if (typeof window.CI_LOGO_URL === 'string' && /^(https:|data:image\/)/.test(window.CI_LOGO_URL)) {
+    const img = new Image();
+    img.alt = ''; img.onload = () => { const el = $('brandLogo'); el.textContent = ''; el.classList.add('has-img'); el.appendChild(img); };
+    img.src = window.CI_LOGO_URL;
+  }
+}
 function bind() {
+  applyBrand();
   $('btnNew').onclick = () => openIncident(null);
   $('btnImport').onclick = openImport;
   $('btnExport').onclick = openExport;
