@@ -215,6 +215,7 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; }
 .empty .em-ico { font-size: 30px; display: block; margin-bottom: 8px; }
 .empty strong { display: block; font-size: 16px; color: var(--ink); margin-bottom: 4px; }
 
+.foot .pending { color: var(--today); font-weight: 600; }
 .foot { margin-top: 12px; font-size: 12px; color: var(--ink-3); display: flex; gap: 16px; flex-wrap: wrap; }
 
 /* ---------- Diálogos ---------- */
@@ -411,7 +412,7 @@ fieldset.extra .full { grid-column: 1 / -1; }
     <div class="empty hidden" id="empty"></div>
   </main>
 
-  <footer class="foot"><span id="storageInfo"></span><span id="syncInfo" class="hidden">⟳ Atualizando…</span></footer>
+  <footer class="foot"><span id="storageInfo"></span><span id="syncInfo" class="hidden">⟳ Atualizando…</span><span id="pendingInfo" class="pending hidden"></span></footer>
 </div>
 
 <div class="menu hidden" id="rowMenu" role="menu"></div>
@@ -646,7 +647,11 @@ fieldset.extra .full { grid-column: 1 / -1; }
   /* Nome da empresa no topo e, se quiser, o link (https://...) de uma imagem da logo */
   window.CI_EMPRESA = "Univale";
   window.CI_LOGO_URL = "";
-  window.CI_API_URL = "https://script.google.com/macros/s/AKfycbyXwzwzEl37q1oSCkxvl65ywupmEyhK6vuVFPJ138Rua5Dd26T0m-nn5Dw0Of9F3CjDrw/exec";
+  /* Links do App da Web do Google Apps Script. Pode ter mais de um: o primeiro que responder é usado. */
+  window.CI_API_URLS = [
+    "https://script.google.com/macros/s/AKfycbxttxZln0TeeR3Qg6Y_ljvoN_1c7Dj0mA90V6gP8_8ok8cHZymgbqsDtIar21dpeI-vkw/exec",
+    "https://script.google.com/macros/s/AKfycbyXwzwzEl37q1oSCkxvl65ywupmEyhK6vuVFPJ138Rua5Dd26T0m-nn5Dw0Of9F3CjDrw/exec"
+  ];
 </script>
 <script>
 /* =========================================================
@@ -694,23 +699,48 @@ const refreshHolidaySet = () => { holidaySet = new Set(state.holidays.map(h => h
 /* ---------------- Armazenamento ---------------- */
 const IS_GAS = typeof google !== 'undefined' && google.script && google.script.run;
 // Link de domínio (/a/macros/empresa.com/) exige login e bloqueia o GitHub: usa sempre o formato público /macros/s/
-const API_URL = !IS_GAS && typeof window.CI_API_URL === 'string' && /^https:\/\/script\.google\.com\//.test(window.CI_API_URL)
-  ? window.CI_API_URL.trim().replace(/\/a\/macros\/[^/]+\/s\//, '/macros/s/') : '';
-const MODE = IS_GAS ? 'gas' : API_URL ? 'api' : 'local';
+// Aceita um ou mais links (o primeiro que responder é usado). Links de domínio (/a/macros/empresa.com/)
+// exigem login e bloqueiam o GitHub, então são convertidos para o formato público /macros/s/
+const normUrl = u => String(u || '').trim().replace(/\/a\/macros\/[^/]+\/s\//, '/macros/s/');
+const API_URLS = IS_GAS ? [] : [...new Set([].concat(window.CI_API_URLS || [], window.CI_API_URL || [])
+  .map(normUrl).filter(u => /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)))];
+let apiIdx = 0;
+try { const k = Number(localStorage.getItem('ci_api_idx')); if (k >= 0 && k < API_URLS.length) apiIdx = k; } catch (e) { /* ignora */ }
+const MODE = IS_GAS ? 'gas' : API_URLS.length ? 'api' : 'local';
 const gas = (fn, ...args) => new Promise((res, rej) => {
   google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args);
 });
-async function api(fn, ...args) {
-  let r;
+async function callUrl(url, fn, args) {
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 30000) : null;
   try {
-    r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }), redirect: 'follow' });
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn, args }), redirect: 'follow', cache: 'no-store', signal: ctrl ? ctrl.signal : undefined });
+    const txt = await r.text();
+    let j;
+    try { j = JSON.parse(txt); } catch (e) { const err = new Error('resposta inválida'); err.net = true; throw err; }
+    return j;
   } catch (e) {
-    throw new Error('Sem acesso ao script do Google. Confira se a implantação está como "Qualquer pessoa".');
+    if (e.net) throw e;
+    const err = new Error(e.name === 'AbortError' ? 'tempo esgotado' : 'sem resposta'); err.net = true; throw err;
+  } finally { if (timer) clearTimeout(timer); }
+}
+async function api(fn, ...args) {
+  let last;
+  for (let t = 0; t < API_URLS.length * 2; t++) {           // tenta cada link, com uma segunda tentativa
+    const k = (apiIdx + t) % API_URLS.length;
+    try {
+      const j = await callUrl(API_URLS[k], fn, args);
+      if (k !== apiIdx) { apiIdx = k; try { localStorage.setItem('ci_api_idx', String(k)); } catch (e) { /* ignora */ } }
+      if (!j.ok) throw Object.assign(new Error(j.error || 'Erro no script do Google.'), { app: true });
+      return j.data;
+    } catch (e) {
+      if (e.app) throw e;                                     // erro do próprio script (ex.: senha): não adianta repetir
+      last = e;
+      if (t + 1 < API_URLS.length * 2) await new Promise(r => setTimeout(r, 600));
+    }
   }
-  let j;
-  try { j = await r.json(); } catch (e) { throw new Error('O Google pediu login. A implantação precisa estar como "Qualquer pessoa" para funcionar pelo GitHub.'); }
-  if (!j.ok) throw new Error(j.error || 'Erro no script do Google.');
-  return j.data;
+  throw Object.assign(new Error('Falha de comunicação com o Google Script (' + (last ? last.message : 'erro') + ').'), { net: true });
 }
 const remote = (fn, ...args) => (MODE === 'gas' ? gas(fn, ...args) : api(fn, ...args));
 const ls = {
@@ -756,6 +786,56 @@ const ss = {
   set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* ignora */ } },
   del(k) { try { sessionStorage.removeItem(k); } catch (e) { /* ignora */ } },
 };
+
+/* ---------------- Fila de envio (nada se perde se a conexão falhar) ---------------- */
+const OUT_KEY = 'ci_outbox_v1';
+let outbox = (() => { try { return JSON.parse(localStorage.getItem(OUT_KEY)) || []; } catch (e) { return []; } })();
+let flushing = false;
+const opId = op => (op.inc ? op.inc.id : op.id);
+const isNetErr = e => !!(e && (e.net || /network|conex|connection|timeout|tempo esgotado|failed to fetch/i.test(String(e.message || e))));
+function saveOutbox() { try { localStorage.setItem(OUT_KEY, JSON.stringify(outbox)); } catch (e) { /* ignora */ } updatePending(); }
+function updatePending() {
+  const el = $('pendingInfo'); if (!el) return;
+  el.classList.toggle('hidden', !outbox.length);
+  el.textContent = outbox.length === 1 ? '⏳ 1 alteração aguardando envio' : `⏳ ${outbox.length} alterações aguardando envio`;
+}
+function queueOp(op) { outbox = outbox.filter(o => opId(o) !== opId(op)); outbox.push(op); saveOutbox(); }
+const runOp = op => (op.type === 'save' ? Store.saveIncident(op.inc) : Store.deleteIncident(op.id));
+/** Reaplica na tela o que ainda não chegou na planilha */
+function applyOutbox() {
+  outbox.forEach(op => {
+    if (op.type === 'save') { const k = state.incidents.findIndex(i => i.id === op.inc.id); if (k >= 0) state.incidents[k] = op.inc; else state.incidents.push(op.inc); }
+    else state.incidents = state.incidents.filter(i => i.id !== op.id);
+  });
+}
+async function sendOp(op) {
+  if (MODE === 'local') return runOp(op);
+  if (outbox.length) { queueOp(op); return flushOutbox(); }   // mantém a ordem das alterações
+  state.busy++;
+  try { await runOp(op); }
+  catch (e) {
+    console.error(e);
+    if (isNetErr(e)) {
+      queueOp(op);
+      toast('Sem comunicação com o Google agora. A alteração ficou guardada e será enviada automaticamente.', true);
+    } else {
+      if (/senha/i.test(String(e.message))) { state.pin = ''; ss.del('ci_pin'); state.canEdit = !state.pinRequired; }
+      toast('A planilha recusou a alteração: ' + e.message, true);
+      state.busy--; await loadAll(false, true); state.busy++;
+    }
+  } finally { state.busy--; }
+}
+async function flushOutbox() {
+  if (flushing || !outbox.length || MODE === 'local') return;
+  flushing = true; state.busy++;
+  const total = outbox.length;
+  try {
+    while (outbox.length) { await runOp(outbox[0]); outbox.shift(); saveOutbox(); }
+    toast(total === 1 ? 'Alteração pendente enviada para a planilha.' : `${total} alterações pendentes enviadas para a planilha.`);
+  } catch (e) {
+    if (!isNetErr(e)) { outbox.shift(); saveOutbox(); toast('Uma alteração pendente foi recusada: ' + e.message, true); }
+  } finally { flushing = false; state.busy--; updatePending(); }
+}
 
 /* ---------------- Regras de prazo ---------------- */
 function isBusiness(iso) {
@@ -1072,7 +1152,7 @@ async function upsert(inc, msg, undoPrev) {
   if (idx >= 0) state.incidents[idx] = inc; else state.incidents.push(inc);
   render();
   if (msg) toast(msg, false, undoPrev ? ['Desfazer', () => upsert(undoPrev, 'Alteração desfeita.')] : null);
-  await persist(Store.saveIncident(inc));
+  await sendOp({ type: 'save', inc });
 }
 
 function onTableAction(act, id) {
@@ -1098,7 +1178,7 @@ function confirmDelete(inc) {
     $('dlgConfirm').close();
     state.incidents = state.incidents.filter(x => x.id !== inc.id);
     render(); toast('Registro excluído.');
-    await persist(Store.deleteIncident(inc.id), 'Falha ao excluir.');
+    await sendOp({ type: 'del', id: inc.id });
   };
   $('dlgConfirm').showModal();
 }
@@ -1584,6 +1664,7 @@ const showLoading = on => $('loading').classList.toggle('hidden', !on);
 /* ---------------- Carga inicial ---------------- */
 function applyData(d) {
     state.incidents = (d && d.incidents) || [];
+    applyOutbox();
     state.holidays = (d && d.holidays) || [];
     if (d && d.settings) state.settings = Object.assign({ prazoPadrao: 4, contarDiaEnvio: false }, d.settings);
     state.pinRequired = !!(d && d.pinRequired);
@@ -1620,13 +1701,14 @@ function readInitial() {
   try { return JSON.parse(t); } catch (e) { return null; }
 }
 function start() {
+  if (outbox.length) setTimeout(() => flushOutbox(), 1500);
   const ini = MODE === 'gas' ? readInitial() : null;
   if (ini) {
     applyData(ini); saveSnapshot(ini); render();
     return; // dados já frescos; a atualização automática segue a cada minuto
   }
   const snap = MODE !== 'local' ? ls.get(SNAP_KEY, null) : null;
-  if (snap) { applyData(snap); render(); loadAll(false, true); }
+  if (snap) { applyData(snap); render(); flushOutbox().then(() => loadAll(false, true)); }
   else loadAll(true);
 }
 
@@ -1742,10 +1824,13 @@ function bind() {
   $('formPin').addEventListener('submit', submitPin);
 
   // Busca novidades na planilha a cada minuto (quem só consulta vê o que o responsável lança)
-  if (MODE !== 'local') setInterval(() => {
+  if (MODE !== 'local') setInterval(async () => {
     if (document.hidden || state.busy || document.querySelector('dialog[open]')) return;
+    if (outbox.length) { await flushOutbox(); if (outbox.length) return; }
     loadAll(false, true);
-  }, 60 * 1000);
+  }, outbox.length ? 20 * 1000 : 60 * 1000);
+  window.addEventListener('online', () => flushOutbox());
+  updatePending();
 
   // Situação muda sozinha com a virada do dia
   const tick = () => { const t = todayISO(); if (t !== state.today) { state.today = t; render(); } };
