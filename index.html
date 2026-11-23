@@ -606,13 +606,150 @@ dialog.drawer .dlg-body { padding-top: 18px; }
   .top-actions .btn { padding: 0 8px; height: 36px; }
 }
 @media (max-width: 480px) {
-  #btnImport, #btnInsights { display: none; }
+  #btnImport, #btnExport { display: none; }
 }
 @media (max-width: 760px) {
   .grid tbody tr { background: color-mix(in srgb, var(--row, #94a3b8) 4%, #fff); }
   .grid tbody tr td, .grid tbody tr:hover td, .grid tr.corr-aging td { background: transparent !important; box-shadow: none !important; }
 }
 @media (max-width: 760px) { .grid tbody tr td:first-child { box-shadow: none !important; } }
+
+/* =================== Indicadores =================== */
+#dlgInsights.drawer { width: min(1040px, 100vw); }
+#dlgInsights .dlg-body { background: #f4f8f8; }
+.ins-controls { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+.ins-controls .field { min-width: 190px; }
+.ins-hint { margin: 0 0 9px auto; font-size: 12px; color: var(--ink-3); }
+.ins-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.ins-kpi { --k: #087f7b; --kb: #e2f8f6; position: relative; background: #fff; border: 1px solid #e1ecea; border-radius: 16px; padding: 14px 16px 13px; box-shadow: 0 2px 10px rgba(8,55,58,.04); overflow: hidden; animation: rowIn .35s var(--ease) both; }
+.ins-kpi::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--k); }
+.ins-kpi:nth-child(2) { animation-delay: .04s; } .ins-kpi:nth-child(3) { animation-delay: .08s; } .ins-kpi:nth-child(4) { animation-delay: .12s; } .ins-kpi:nth-child(5) { animation-delay: .16s; } .ins-kpi:nth-child(6) { animation-delay: .2s; }
+.ins-kpi.blue { --k: #1d4ed8; --kb: #e8eefb; } .ins-kpi.red { --k: var(--late); --kb: var(--late-bg); } .ins-kpi.green { --k: var(--ok); --kb: var(--ok-bg); }
+.ins-kpi.cyan { --k: #0786a0; --kb: #e2f6fa; } .ins-kpi.amber { --k: #c07809; --kb: #fff4e0; } .ins-kpi.slate { --k: #64748b; --kb: #eef1f5; }
+.ins-kpi-top { display: flex; align-items: center; gap: 8px; }
+.ins-ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--kb); color: var(--k); flex: none; }
+.ins-ico svg { width: 17px; height: 17px; }
+.ins-lbl { font-size: 12px; font-weight: 700; color: #4b6563; text-transform: uppercase; letter-spacing: .04em; }
+.ins-val { font-size: 30px; font-weight: 800; color: var(--k); line-height: 1.15; margin: 8px 0 2px; font-variant-numeric: tabular-nums; }
+.ins-val small { font-size: 15px; font-weight: 700; margin-left: 2px; }
+.ins-sub { display: block; font-size: 12px; color: #6b7f7d; }
+.ins-sub b { color: var(--late); }
+.ins-delta { display: inline-block; margin-top: 6px; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.ins-delta.neutral { background: #eef2f4; color: #4b6563; }
+.ins-delta.good { background: var(--ok-bg); color: var(--ok); } .ins-delta.bad { background: var(--late-bg); color: var(--late); } .ins-delta.flat { background: #eef2f4; color: #6b7f7d; font-weight: 600; }
+.ins-kpi.big .ins-ico { background: transparent; }
+.ins-ring { width: 30px; height: 30px; transform: none; }
+.ins-ring circle { fill: none; stroke-width: 4.5; }
+.ins-ring .bg { stroke: #d8efed; } .ins-ring .fg { stroke: var(--k); stroke-linecap: round; transition: stroke-dasharray .6s var(--ease); }
+.ins-kpi.big .ins-kpi-top::before { content: none; }
+.ins-kpi.big .ins-ico + .ins-lbl, .ins-kpi.big .ins-lbl { margin-left: 0; }
+.ins-kpi.big .ins-kpi-top .ins-ring { display: block; }
+
+.ins-box { background: #fff; border: 1px solid #e1ecea; border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(8,55,58,.04); }
+.ins-box-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.ins-box-head h3 { margin: 0; font-size: 15px; color: #0f2e2d; }
+.ins-tot { font-size: 12px; color: var(--ink-3); }
+.ins-legend { display: flex; gap: 14px; font-size: 12px; color: #4b6563; }
+.ins-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.ins-legend i.line { height: 3px; width: 16px; border-radius: 2px; background: #f59e0b; vertical-align: 3px; }
+.ins-foot { margin: 6px 0 0; font-size: 11.5px; color: var(--ink-3); }
+.ins-chart svg { width: 100%; height: auto; display: block; }
+.ins-chart .grid-l { stroke: #edf2f2; }
+.ins-chart .ax { font-size: 11px; fill: #7c908e; font-family: var(--font); }
+.ins-chart .ax.pc { fill: #d18a06; }
+.ins-chart .b-reg { fill: #cbd5e1; } .ins-chart .b-lib { fill: var(--brand-2); }
+.ins-chart .hit { fill: transparent; }
+.ins-chart .bar-g { cursor: pointer; }
+.ins-chart .bar-g:hover .hit { fill: #f1faf9; }
+.ins-chart .bar-g:hover .b-lib { fill: #087f7b; }
+.ins-chart .np-line { fill: none; stroke: #f59e0b; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.ins-chart .np-dot { fill: #fff; stroke: #f59e0b; stroke-width: 2.5; }
+.ins-chart rect.b-reg, .ins-chart rect.b-lib { animation: growUp .6s var(--ease) both; transform-origin: bottom; transform-box: fill-box; }
+@keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+.ins-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ins-two .ins-box { margin-bottom: 14px; }
+.ins-stack { display: flex; height: 14px; border-radius: 10px; overflow: hidden; background: #eef2f4; margin-bottom: 12px; }
+.ins-stack span { height: 100%; transition: width .6s var(--ease); }
+.ins-stage-list, .ins-donut-legend { display: grid; gap: 2px; }
+.ins-stage { display: grid; grid-template-columns: 12px 1fr auto 44px; gap: 10px; align-items: center; width: 100%; padding: 7px 8px; border: none; background: transparent; border-radius: 9px; cursor: pointer; text-align: left; font-size: 13px; color: #2b4442; }
+.ins-donut-legend .ins-stage { grid-template-columns: 12px 1fr auto; }
+.ins-stage:hover { background: #f1faf9; }
+.ins-stage i { width: 10px; height: 10px; border-radius: 3px; }
+.ins-stage b { font-variant-numeric: tabular-nums; }
+.ins-stage em { font-style: normal; font-size: 12px; color: var(--ink-3); text-align: right; }
+.ins-donut-wrap { display: grid; grid-template-columns: 150px 1fr; gap: 18px; align-items: center; }
+.ins-donut { position: relative; width: 150px; height: 150px; }
+.ins-donut svg { width: 100%; height: 100%; transform: rotate(0deg); }
+.ins-donut circle { transition: stroke-dasharray .6s var(--ease); }
+.ins-donut span { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 28px; font-weight: 800; color: #0f2e2d; line-height: 1; }
+.ins-donut span small { display: block; font-size: 11px; font-weight: 600; color: var(--ink-3); margin-top: 4px; }
+.ins-donut.empty { border-radius: 50%; border: 18px solid #eef2f4; box-sizing: border-box; }
+
+.ins-table-wrap { overflow-x: auto; }
+.ins-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ins-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #7c908e; font-weight: 700; padding: 6px 8px; border-bottom: 1px solid #e6eeee; }
+.ins-table td { padding: 8px; border-bottom: 1px solid #f0f4f4; vertical-align: middle; }
+.ins-table .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ins-table tbody tr { cursor: pointer; transition: background .15s; }
+.ins-table tbody tr:hover { background: #f1faf9; }
+.ins-table td:nth-child(2) { width: 34%; }
+.ins-mini { display: inline-block; vertical-align: middle; width: calc(100% - 34px); height: 8px; border-radius: 6px; background: #eef2f4; overflow: hidden; }
+.ins-mini span { display: block; height: 100%; background: linear-gradient(90deg, #12bdb5, #087f7b); border-radius: 6px; }
+.ins-mini-n { display: inline-block; width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+.ins-badge { display: inline-block; min-width: 26px; padding: 1px 8px; border-radius: 20px; font-weight: 700; font-size: 12px; text-align: center; }
+.ins-badge.red { background: var(--late-bg); color: var(--late); } .ins-badge.amber { background: #fff4e0; color: #b45309; } .ins-badge.green { background: var(--ok-bg); color: var(--ok); }
+
+.ins-old { display: grid; gap: 4px; }
+.ins-old-row { display: grid; grid-template-columns: 44px 1fr 16px; gap: 10px; align-items: center; padding: 8px; border: none; border-radius: 10px; background: transparent; cursor: pointer; text-align: left; }
+.ins-old-row:hover { background: #f1faf9; }
+.ins-old-d { height: 36px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; background: #eef2f4; color: #4b6563; font-variant-numeric: tabular-nums; }
+.ins-old-d.amber { background: #fff4e0; color: #b45309; } .ins-old-d.red { background: var(--late-bg); color: var(--late); }
+.ins-old-t { font-size: 13px; color: #2b4442; min-width: 0; }
+.ins-old-t small { display: block; font-size: 11.5px; color: var(--ink-3); }
+.ins-go { color: var(--ink-3); font-size: 18px; }
+.ins-people { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ins-people h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #7c908e; }
+.ins-person { display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; padding: 5px 0; font-size: 13px; }
+.ins-av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #e2f8f6; color: #087f7b; font-weight: 800; font-size: 12px; }
+.ins-pn { position: relative; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-bottom: 5px; }
+.ins-pn i { position: absolute; left: 0; bottom: 0; height: 3px; border-radius: 3px; background: #12bdb5; }
+
+@media (max-width: 900px) { .ins-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ins-two { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .ins-kpis { grid-template-columns: 1fr 1fr; gap: 8px; } .ins-val { font-size: 24px; }
+  .ins-donut-wrap { grid-template-columns: 1fr; justify-items: center; } .ins-people { grid-template-columns: 1fr; }
+  .ins-hint { margin-left: 0; }
+}
+
+/* ===== Correções: cores das linhas, quadros clicáveis ===== */
+.grid tr.s-emdia { --row: #16834a; }
+.grid tr.s-hoje { --row: #d97706; }
+.grid tr.tag-ready { --row: #16834a; }
+.grid tbody tr.tag-ready td { background: color-mix(in srgb, #16834a 10%, #fff) !important; }
+.grid tbody tr.tag-ready:hover td { background: color-mix(in srgb, #16834a 15%, #fff) !important; }
+.grid tbody tr.tag-ready td:first-child { box-shadow: inset 4px 0 0 #16834a !important; }
+.local-tag.ready { background: #16834a; color: #fff; }
+@media (max-width: 760px) { .grid tbody tr.tag-ready { background: color-mix(in srgb, #16834a 10%, #fff); } .grid tbody tr.tag-ready td { background: transparent !important; } }
+
+.monitor-card.clickable { cursor: pointer; transition: transform .18s var(--ease), box-shadow .18s, border-color .18s; }
+.monitor-card.clickable:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(8, 55, 58, .1); }
+.monitor-card.clickable:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 2px; }
+.monitor-card.active { box-shadow: 0 0 0 2px currentColor inset; }
+.monitor-card.danger.active { box-shadow: 0 0 0 2px #e8a29c inset; }
+.monitor-card.warning.active { box-shadow: 0 0 0 2px #e8c88a inset; }
+.m-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.m-go { font-size: 11px; text-transform: none; letter-spacing: 0; font-weight: 700; opacity: .7; }
+.monitor-card.clickable:hover .m-go { opacity: 1; }
+.month-chip { font-family: inherit; transition: background .15s, border-color .15s, color .15s; }
+.month-chip.active { background: #079b94; border-color: #079b94; color: #fff; }
+.monitor-card.danger .month-chip { border-color: #f0cfcb; color: #9e2727; }
+.monitor-card.danger .month-chip:hover { background: #ffe8e5; border-color: #e8a29c; }
+.monitor-card.warning .month-chip { border-color: #eedcb6; color: #89530b; }
+.monitor-card.warning .month-chip:hover { background: #fff0cf; border-color: #e8c88a; }
+.m-more { font-size: 11px; font-weight: 700; color: #7c908e; align-self: center; }
+.link-btn { border: none; background: none; padding: 0; color: var(--brand-2); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
+.local-tag { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -696,8 +833,8 @@ dialog.drawer .dlg-body { padding-top: 18px; }
 
     <section class="stage-monitor" id="stageMonitor" aria-label="Acompanhamento de prazos">
       <div class="monitor-card"><div class="m-label">Pendências por mês do incidente</div><div class="m-value" id="monthlyOpenTotal">0</div><div class="m-note">Incidentes ainda não finalizados, agrupados pelo mês em que aconteceram</div><div class="monitor-months" id="monthlyOpenList"></div></div>
-      <div class="monitor-card danger"><div class="m-label">Sem análise há mais de 4 dias úteis</div><div class="m-value" id="noAnalysisCount">0</div><div class="m-note">A partir da data do incidente, sem envio de e-mail registrado</div></div>
-      <div class="monitor-card warning"><div class="m-label">Em correção há 2 dias úteis ou mais</div><div class="m-value" id="correctionAgeCount">0</div><div class="m-note">Sinal de acompanhamento para cobrar a devolutiva</div></div>
+      <div class="monitor-card danger clickable" id="cardNoAnalysis" data-follow="sem_analise" role="button" tabindex="0" title="Clique para ver esses incidentes na tabela"><div class="m-label">Sem análise há mais de 4 dias úteis <span class="m-go">Ver ›</span></div><div class="m-value" id="noAnalysisCount">0</div><div class="m-note">A partir da data do incidente, sem envio de e-mail registrado</div><div class="monitor-months" id="noAnalysisList"></div></div>
+      <div class="monitor-card warning clickable" id="cardCorrection" data-follow="correcao_2" role="button" tabindex="0" title="Clique para ver esses incidentes na tabela"><div class="m-label">Em correção há 2 dias úteis ou mais <span class="m-go">Ver ›</span></div><div class="m-value" id="correctionAgeCount">0</div><div class="m-note">Sinal de acompanhamento para cobrar a devolutiva</div><div class="monitor-months" id="correctionAgeList"></div></div>
     </section>
     <div class="filters hidden" id="filters">
       <div><label for="fMesBase">Mês pela data</label>
@@ -707,7 +844,7 @@ dialog.drawer .dlg-body { padding-top: 18px; }
       <div><label for="fResp">Responsável</label><select id="fResp"></select></div>
       <div><label for="fTipo">Tipo de incidente</label><select id="fTipo"></select></div>
       <div><label for="fSit">Situação</label><select id="fSit"></select></div>
-      <div><label for="fFollow">Acompanhamento</label><select id="fFollow"><option value="">Todos</option><option value="sem_analise">Sem análise há mais de 4 dias úteis</option><option value="correcao_2">Em correção há 2+ dias úteis</option></select></div>
+      <div><label for="fFollow">Acompanhamento</label><select id="fFollow"><option value="">Todos</option><option value="sem_analise">Sem análise há mais de 4 dias úteis</option><option value="correcao_2">Em correção há 2+ dias úteis</option><option value="abertos">Todos em aberto (todas as etapas)</option></select></div>
       <div class="filters-end"><button class="btn ghost" id="btnClearFilters">Limpar filtros</button></div>
     </div>
 
@@ -962,7 +1099,7 @@ dialog.drawer .dlg-body { padding-top: 18px; }
   </div><div class="dlg-foot"><button class="btn" type="button" data-close>Fechar</button></div>
 </div></dialog>
 <dialog id="dlgInsights" class="wide"><div class="dlg">
-  <div class="dlg-head"><h2>Indicadores de evolução</h2><p>Visão calculada a partir dos registros carregados no controle. Não altera os dados nem as etapas.</p></div>
+  <div class="dlg-head"><h2>Indicadores</h2><p>Desempenho dos prazos, gargalos por etapa e por local. Clique nos gráficos para abrir os registros.</p></div>
   <div class="dlg-body"><div id="kpiContent"></div></div>
   <div class="dlg-foot"><button class="btn" type="button" data-close>Fechar</button><button class="btn primary" id="kpiRefresh" type="button">Atualizar indicadores</button></div>
 </div></dialog>
@@ -1373,8 +1510,9 @@ function correctionNeedsFollowup(inc) {
 }
 function monthKey(date){ return date ? String(date).slice(0,7) : ''; }
 function jumpToMonth(month){
+  // mostra todos os incidentes ainda não finalizados daquele mês, de qualquer etapa
   state.view='pendentes'; state.filters.mesBase='dataIncidente'; state.filters.mes=month;
-  state.filters.sit=''; state.filters.follow=''; state.sort={key:null,dir:1}; render();
+  state.filters.sit=''; state.filters.follow='abertos'; state.sort={key:null,dir:1}; render(); animatePanel();
 }
 function renderStageMonitor(){
   const openIncidents = state.incidents.filter(i => i.status !== 'liberado');
@@ -1384,12 +1522,17 @@ function renderStageMonitor(){
   const monthRows=Object.entries(months).sort((a,b)=>b[0].localeCompare(a[0]));
   $('monthlyOpenTotal').textContent=openIncidents.length;
   $('monthlyOpenList').innerHTML=monthRows.length
-    ? monthRows.slice(0,6).map(([m,n])=>`<span class="month-chip" title="${n} incidente(s) ainda não finalizado(s) em ${fmtMes(m)}">${fmtMes(m)} · ${n}</span>`).join('')
+    ? monthRows.slice(0,6).map(([m,n])=>`<button type="button" class="month-chip${state.filters.follow==='abertos'&&state.filters.mes===m?' active':''}" data-month="${m}" title="Ver os ${n} incidente(s) ainda não finalizado(s) de ${fmtMes(m)}">${fmtMes(m)} · ${n}</button>`).join('')
     : '<span class="m-note">Nenhuma pendência registrada.</span>';
   const noAnalysis=pending.filter(needsAnalysisFollowup);
   const correction=state.incidents.filter(correctionNeedsFollowup);
   $('noAnalysisCount').textContent=noAnalysis.length;
   $('correctionAgeCount').textContent=correction.length;
+  const nomes=(list)=>list.slice(0,4).map(i=>`<button type="button" class="month-chip" data-open-inc="${esc(i.id)}" title="Abrir: ${esc(resumo(i))}">${esc(i.local||'—')} · ${esc((i.responsavel||'').split(' ')[0]||'—')}</button>`).join('')+(list.length>4?`<span class="m-more">+${list.length-4}</span>`:'');
+  $('noAnalysisList').innerHTML=noAnalysis.length?nomes(noAnalysis):'<span class="m-note">Nenhum no momento ✓</span>';
+  $('correctionAgeList').innerHTML=correction.length?nomes(correction):'<span class="m-note">Nenhum no momento ✓</span>';
+  $('cardNoAnalysis').classList.toggle('active',state.filters.follow==='sem_analise');
+  $('cardCorrection').classList.toggle('active',state.filters.follow==='correcao_2');
   const a=$('alertNoAnalysis');
   a.classList.toggle('hidden',!noAnalysis.length);
   a.innerHTML=noAnalysis.length
@@ -1404,7 +1547,8 @@ function renderStageMonitor(){
 /* ---------------- Filtros ---------------- */
 function filtered(view = state.view, applyFilters = true) {
   const f = state.filters; const q = norm(state.search);
-  return state.incidents.filter(i => viewOf(i) === view).filter(i => {
+  const todosAbertos = applyFilters && view === state.view && f.follow === 'abertos';
+  return state.incidents.filter(i => (todosAbertos ? i.status !== 'liberado' : viewOf(i) === view)).filter(i => {
     if (!applyFilters) return true;
     if (f.mes) { const d = i[f.mesBase]; if (!d || d.slice(0, 7) !== f.mes) return false; }
     if (f.local && i.local !== f.local) return false;
@@ -1454,7 +1598,7 @@ function saveAuxMeta(){ try { localStorage.setItem(META_KEY, JSON.stringify(auxM
 function metaFor(id){ return auxMeta[id] || (auxMeta[id]={comments:[], tag:'', alert:false, alertDone:false}); }
 function localMetaHtml(inc){ const m=metaFor(inc.id); let h='';
   if(m.tag==='aguardar') h+='<span class="local-tag wait">Aguardar</span>';
-  if(m.tag==='liberado_antecipado') h+='<span class="local-tag ready">Já liberado · antes dos 4 dias</span>';
+  if(m.tag==='liberado_antecipado') h+='<span class="local-tag ready" title="Liberado antes dos 4 dias úteis">✓ Já liberado</span>';
   if(m.alert && !m.alertDone) h+='<span class="row-alert">● Retorno recebido · conferir</span>'; return h;
 }
 let commentTargetId=null;
@@ -1468,14 +1612,231 @@ function saveComment(){ const value=$('commentText').value.trim(); if(!value){to
   m.alert=$('commentAlert').checked; m.alertDone=false; saveAuxMeta(); $('commentText').value=''; renderComments(); render(); toast('Comentário registrado neste navegador.'); }
 function toggleLocalTag(id,tag){ const m=metaFor(id); m.tag=m.tag===tag?'':tag; saveAuxMeta(); render(); toast(m.tag?'Etiqueta atualizada.':'Etiqueta removida.'); }
 function toggleLearnerAlert(id){ const m=metaFor(id); m.alertDone=!m.alertDone; saveAuxMeta(); render(); toast(m.alertDone?'Alerta marcado como conferido.':'Alerta reativado.'); }
-function renderInsights(){ const all=state.incidents,total=all.length; const counts={pendentes:0,correcao:0,postergados:0,conferencia:0,liberados:0};
-  all.forEach(i=>counts[viewOf(i)]++); const late=all.filter(i=>viewOf(i)==='pendentes'&&info(i).sit==='atrasado').length;
-  const early=all.filter(i=>i.dataLiberacao&&i.dataEmail&&businessBetween(i.dataEmail,i.dataLiberacao)<(Number(i.prazo)||4)).length;
-  const checked=Object.values(auxMeta).filter(m=>m.alert&&!m.alertDone).length;
-  const bars=Object.entries({Pendentes:counts.pendentes,'Em correção':counts.correcao,Postergados:counts.postergados,'A conferir':counts.conferencia,Finalizados:counts.liberados}); const max=Math.max(1,...bars.map(x=>x[1]));
-  $('kpiContent').innerHTML=`<div class="kpi-grid"><div class="kpi-card"><span class="sub">Registros totais</span><b>${total}</b></div><div class="kpi-card"><span class="sub">Pendências atrasadas</span><b>${late}</b></div><div class="kpi-card"><span class="sub">Alertas para conferir</span><b>${checked}</b></div><div class="kpi-card"><span class="sub">Liberados antes do prazo configurado</span><b>${early}</b></div><div class="kpi-card"><span class="sub">Taxa finalizada</span><b>${total?Math.round(counts.liberados/total*100):0}%</b></div><div class="kpi-card"><span class="sub">Atualizado em</span><b style="font-size:15px">${new Date().toLocaleString('pt-BR')}</b></div></div>
-  <div class="section-title">Distribuição por etapa</div><div class="kpi-bars">${bars.map(([n,v])=>`<div class="kpi-bar-row"><span>${n}</span><div class="kpi-track"><div class="kpi-fill" style="width:${v/max*100}%"></div></div><b>${v}</b></div>`).join('')}</div>
-  <p class="note">Comentários, etiquetas e alertas ficam salvos apenas neste navegador. Os indicadores de etapas usam os registros da base já sincronizada.</p>`; }
+/* ---------------- Indicadores ---------------- */
+const insState = { period: '6', local: '' };
+const MES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const fmtMesCurto = ym => `${MES_CURTO[Number(ym.slice(5, 7)) - 1]}/${ym.slice(2, 4)}`;
+const avg = arr => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
+const fmt1 = v => (v == null ? '—' : v.toLocaleString('pt-BR', { maximumFractionDigits: 1 }));
+const pct = (a, b) => (b ? Math.round((a / b) * 100) : null);
+function monthsBack(n) {
+  const d = parseISO(state.today); const out = [];
+  for (let k = n - 1; k >= 0; k--) { const x = new Date(d.getFullYear(), d.getMonth() - k, 1); out.push(`${x.getFullYear()}-${pad(x.getMonth() + 1)}`); }
+  return out;
+}
+function insRange() {
+  const p = insState.period;
+  if (p === 'ano') { const y = state.today.slice(0, 4); const m = Number(state.today.slice(5, 7)); return { months: monthsBack(m), start: `${y}-01-01`, label: `em ${y}` }; }
+  if (p === 'tudo') {
+    const datas = state.incidents.map(i => i.dataIncidente).filter(Boolean).sort();
+    const first = datas[0] || state.today;
+    const d0 = parseISO(first), d1 = parseISO(state.today);
+    const n = Math.min(36, (d1.getFullYear() - d0.getFullYear()) * 12 + d1.getMonth() - d0.getMonth() + 1);
+    return { months: monthsBack(Math.max(1, n)), start: '0000-01-01', label: 'em todo o período' };
+  }
+  const n = Number(p); const months = monthsBack(n);
+  return { months, start: months[0] + '-01', label: `nos últimos ${n} meses` };
+}
+/** Período anterior de mesmo tamanho, para comparar */
+function prevStart(start, n) { const d = parseISO(start); const x = new Date(d.getFullYear(), d.getMonth() - n, 1); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-01`; }
+function delta(cur, prev, goodWhenUp, unit) {
+  if (cur == null || prev == null) return '<span class="ins-delta flat">sem base de comparação</span>';
+  const d = Math.round((cur - prev) * 10) / 10;
+  if (!d) return '<span class="ins-delta flat">igual ao período anterior</span>';
+  const bom = goodWhenUp ? d > 0 : d < 0;
+  const cls = goodWhenUp === null ? 'neutral' : (bom ? 'good' : 'bad');
+  return `<span class="ins-delta ${cls}">${d > 0 ? '▲' : '▼'} ${fmt1(Math.abs(d))}${unit} vs. período anterior</span>`;
+}
+function renderInsights() {
+  const R = insRange();
+  const base = insState.local ? state.incidents.filter(i => i.local === insState.local) : state.incidents;
+  const between = (d, a, b) => d && d >= a && d < b;
+  const fim = '9999-12-31';
+  const nMeses = R.months.length;
+  const pStart = insState.period === 'tudo' ? null : prevStart(R.start, nMeses);
+
+  const metrics = (a, b) => {
+    const lib = base.filter(i => (i.status === 'liberado' || i.status === 'conferencia') && between(i.dataLiberacao, a, b));
+    const comPrazo = lib.map(i => info(i)).filter(x => x.noPrazo !== undefined);
+    const conf = base.filter(i => i.status === 'liberado' && between(i.dataConferencia, a, b) && i.dataLiberacao);
+    const corr = base.filter(i => between(i.dataCorrecao, a, b));
+    return {
+      registrados: base.filter(i => between(i.dataIncidente, a, b)).length,
+      liberados: lib.length,
+      noPrazo: pct(comPrazo.filter(x => x.noPrazo).length, comPrazo.length),
+      tempoLib: avg(lib.filter(i => baseDate(i)).map(i => info(i).dias).filter(v => typeof v === 'number')),
+      tempoConf: avg(conf.map(i => businessBetween(i.dataLiberacao, i.dataConferencia))),
+      correcoes: corr.length,
+      tempoDev: avg(corr.filter(i => i.dataDevolutiva).map(i => businessBetween(i.dataCorrecao, i.dataDevolutiva))),
+    };
+  };
+  const M = metrics(R.start, fim);
+  const P = pStart ? metrics(pStart, R.start) : {};
+
+  const abertos = base.filter(i => i.status !== 'liberado');
+  const pend = base.filter(i => viewOf(i) === 'pendentes').map(i => info(i));
+  const sitCount = k => pend.filter(x => x.sit === k).length;
+  const atrasados = sitCount('atrasado');
+
+  /* --- Evolução mensal --- */
+  const serie = R.months.map(m => {
+    const a = m + '-01', b = (() => { const d = parseISO(a); const x = new Date(d.getFullYear(), d.getMonth() + 1, 1); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-01`; })();
+    const mm = metrics(a, b);
+    return { m, reg: mm.registrados, lib: mm.liberados, np: mm.noPrazo };
+  });
+  const chart = barChart(serie);
+
+  /* --- Etapas agora --- */
+  const etapas = [['pendentes', 'Pendentes', 'var(--c-pend)'], ['correcao', 'Em correção', 'var(--c-corr)'], ['postergados', 'Postergados', 'var(--c-post)'], ['conferencia', 'A conferir', 'var(--c-conf)'], ['liberados', 'Finalizados', 'var(--c-lib)']]
+    .map(([v, n, c]) => ({ v, n, c, q: base.filter(i => viewOf(i) === v).length }));
+  const totEt = etapas.reduce((a, e) => a + e.q, 0) || 1;
+
+  /* --- Situação dos pendentes (rosca) --- */
+  const fatias = [['atrasado', 'Atrasados', 'var(--late)'], ['hoje', 'Liberar hoje', 'var(--today)'], ['emdia', 'Em dia', 'var(--ok)'], ['semdata', 'Aguardando e-mail', '#94a3b8']]
+    .map(([k, n, c]) => ({ k, n, c, q: sitCount(k) }));
+
+  /* --- Por local --- */
+  const locais = {};
+  base.forEach(i => {
+    const k = i.local || '(sem local)';
+    const o = locais[k] || (locais[k] = { k, reg: 0, abertos: 0, atras: 0, ok: 0, comPrazo: 0, tempos: [] });
+    if (between(i.dataIncidente, R.start, fim)) o.reg++;
+    if (i.status !== 'liberado') o.abertos++;
+    const x = info(i);
+    if (viewOf(i) === 'pendentes' && x.sit === 'atrasado') o.atras++;
+    if ((i.status === 'liberado' || i.status === 'conferencia') && between(i.dataLiberacao, R.start, fim)) {
+      if (x.noPrazo !== undefined) { o.comPrazo++; if (x.noPrazo) o.ok++; }
+      if (typeof x.dias === 'number' && baseDate(i)) o.tempos.push(x.dias);
+    }
+  });
+  const rank = Object.values(locais).filter(o => o.reg || o.abertos).sort((a, b) => b.abertos - a.abertos || b.reg - a.reg).slice(0, 10);
+  const maxAb = Math.max(1, ...rank.map(o => o.abertos));
+
+  /* --- Pessoas --- */
+  const porPessoa = (campo, dataCampo) => {
+    const c = {};
+    base.forEach(i => { if (i[campo] && between(i[dataCampo], R.start, fim)) c[i[campo]] = (c[i[campo]] || 0) + 1; });
+    return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  };
+  const liberadores = porPessoa('liberadoPor', 'dataLiberacao');
+  const conferentes = porPessoa('conferidoPor', 'dataConferencia');
+
+  /* --- Mais antigos em aberto --- */
+  const antigos = abertos.filter(i => i.dataIncidente)
+    .map(i => ({ i, d: businessBetween(i.dataIncidente, state.today) }))
+    .sort((a, b) => b.d - a.d).slice(0, 6);
+
+  const locaisOpts = [...new Set(state.incidents.map(i => i.local).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const card = (cls, ico, rotulo, valor, sufixo, extra) =>
+    `<div class="ins-kpi ${cls}"><div class="ins-kpi-top"><span class="ins-ico">${ico}</span><span class="ins-lbl">${rotulo}</span></div><div class="ins-val">${valor}<small>${sufixo}</small></div>${extra}</div>`;
+  const ring = M.noPrazo == null ? '' : `<svg class="ins-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.9" class="bg"/><circle cx="18" cy="18" r="15.9" class="fg" stroke-dasharray="${M.noPrazo} ${100 - M.noPrazo}" stroke-dashoffset="25"/></svg>`;
+
+  $('kpiContent').innerHTML = `
+  <div class="ins-controls">
+    <div class="field"><label for="insPeriod">Período</label><select id="insPeriod">
+      ${[['3', 'Últimos 3 meses'], ['6', 'Últimos 6 meses'], ['12', 'Últimos 12 meses'], ['ano', 'Este ano'], ['tudo', 'Todo o período']].map(([v, t]) => `<option value="${v}" ${insState.period === v ? 'selected' : ''}>${t}</option>`).join('')}
+    </select></div>
+    <div class="field"><label for="insLocal">Local/Filial</label><select id="insLocal"><option value="">Todos os locais</option>
+      ${locaisOpts.map(l => `<option value="${esc(l)}" ${insState.local === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}
+    </select></div>
+    <p class="ins-hint">Valores ${R.label}${insState.local ? ' • ' + esc(insState.local) : ''}. Prazos em dias úteis.</p>
+  </div>
+
+  <div class="ins-kpis">
+    ${card('teal big', ring || ICON.emdia, 'Liberados no prazo', M.noPrazo == null ? '—' : M.noPrazo, M.noPrazo == null ? '' : '%', `<span class="ins-sub">${M.liberados} liberações no período</span>${delta(M.noPrazo, P.noPrazo, true, ' p.p.')}`)}
+    ${card('blue', ICON.hoje, 'Tempo médio até liberar', fmt1(M.tempoLib), M.tempoLib == null ? '' : ' d.u.', `<span class="ins-sub">do e-mail até a 2ª parte</span>${delta(M.tempoLib, P.tempoLib, false, ' d.u.')}`)}
+    ${card(atrasados ? 'red' : 'green', ICON.atrasado, 'Em aberto agora', abertos.length, '', `<span class="ins-sub">${atrasados ? `<b>${atrasados}</b> atrasado${atrasados > 1 ? 's' : ''}` : 'nenhum atrasado'}</span>`)}
+    ${card('cyan', ICON.emdia, 'Tempo médio de conferência', fmt1(M.tempoConf), M.tempoConf == null ? '' : ' d.u.', `<span class="ins-sub">da liberação até a conferência</span>${delta(M.tempoConf, P.tempoConf, false, ' d.u.')}`)}
+    ${card('amber', ICON.semdata, 'Enviados para correção', M.correcoes, '', `<span class="ins-sub">devolutiva em ${fmt1(M.tempoDev)}${M.tempoDev == null ? '' : ' d.u.'} em média</span>${delta(M.correcoes, P.correcoes, false, '')}`)}
+    ${card('slate', ICON.semdata, 'Incidentes registrados', M.registrados, '', `<span class="ins-sub">pela data do incidente</span>${delta(M.registrados, P.registrados, null, '')}`)}
+  </div>
+
+  <section class="ins-box">
+    <div class="ins-box-head"><h3>Evolução mês a mês</h3>
+      <div class="ins-legend"><span><i style="background:#cbd5e1"></i>Registrados</span><span><i style="background:var(--brand-2)"></i>Liberados</span><span><i class="line"></i>% no prazo</span></div></div>
+    ${chart}
+    <p class="ins-foot">Clique em um mês para ver os incidentes daquele mês na tabela.</p>
+  </section>
+
+  <div class="ins-two">
+    <section class="ins-box">
+      <div class="ins-box-head"><h3>Onde estão os incidentes agora</h3><span class="ins-tot">${totEt === 1 && !etapas.some(e => e.q) ? 0 : totEt} no total</span></div>
+      <div class="ins-stack">${etapas.map(e => e.q ? `<span style="width:${(e.q / totEt) * 100}%;background:${e.c}" title="${e.n}: ${e.q}"></span>` : '').join('')}</div>
+      <div class="ins-stage-list">${etapas.map(e => `<button type="button" class="ins-stage" data-ins-view="${e.v}"><i style="background:${e.c}"></i><span>${e.n}</span><b>${e.q}</b><em>${Math.round((e.q / totEt) * 100)}%</em></button>`).join('')}</div>
+    </section>
+    <section class="ins-box">
+      <div class="ins-box-head"><h3>Situação dos pendentes</h3><span class="ins-tot">${pend.length} pendentes</span></div>
+      <div class="ins-donut-wrap">${donut(fatias)}
+        <div class="ins-donut-legend">${fatias.map(f => `<button type="button" class="ins-stage" data-ins-sit="${f.k}"><i style="background:${f.c}"></i><span>${f.n}</span><b>${f.q}</b></button>`).join('')}</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="ins-box">
+    <div class="ins-box-head"><h3>Por local/filial</h3><span class="ins-tot">ordenado por incidentes em aberto</span></div>
+    ${rank.length ? `<div class="ins-table-wrap"><table class="ins-table"><thead><tr><th>Local</th><th>Em aberto</th><th class="num">Atrasados</th><th class="num">Registrados</th><th class="num">No prazo</th><th class="num">Tempo médio</th></tr></thead><tbody>
+      ${rank.map(o => { const p = pct(o.ok, o.comPrazo); const t = avg(o.tempos); return `<tr data-ins-local="${esc(o.k === '(sem local)' ? '' : o.k)}"><td><b>${esc(o.k)}</b></td>
+        <td><div class="ins-mini"><span style="width:${(o.abertos / maxAb) * 100}%"></span></div><b class="ins-mini-n">${o.abertos}</b></td>
+        <td class="num">${o.atras ? `<span class="ins-badge red">${o.atras}</span>` : '<span class="dim">0</span>'}</td>
+        <td class="num">${o.reg}</td>
+        <td class="num">${p == null ? '<span class="dim">—</span>' : `<span class="ins-badge ${p >= 90 ? 'green' : p >= 70 ? 'amber' : 'red'}">${p}%</span>`}</td>
+        <td class="num">${t == null ? '<span class="dim">—</span>' : fmt1(t) + ' d.u.'}</td></tr>`; }).join('')}
+    </tbody></table></div>` : '<div class="list-empty">Sem dados no período.</div>'}
+  </section>
+
+  <div class="ins-two">
+    <section class="ins-box">
+      <div class="ins-box-head"><h3>Mais antigos em aberto</h3><span class="ins-tot">dias úteis desde o incidente</span></div>
+      ${antigos.length ? `<div class="ins-old">${antigos.map(({ i, d }) => `<button type="button" class="ins-old-row" data-ins-open="${esc(i.id)}"><span class="ins-old-d ${d > 15 ? 'red' : d > 8 ? 'amber' : ''}">${d}</span><span class="ins-old-t"><b>${esc(i.local || '—')}</b> · ${esc(i.responsavel || '—')}<small>${fmtBR(i.dataIncidente)} • ${VIEW_LABEL[viewOf(i)]}</small></span><span class="ins-go">›</span></button>`).join('')}</div>` : '<div class="list-empty">Nenhum incidente em aberto. 🎉</div>'}
+    </section>
+    <section class="ins-box">
+      <div class="ins-box-head"><h3>Quem fez ${R.label}</h3></div>
+      <div class="ins-people">
+        <div><h4>Liberações (2ª parte)</h4>${peopleList(liberadores)}</div>
+        <div><h4>Conferências</h4>${peopleList(conferentes)}</div>
+      </div>
+    </section>
+  </div>
+  <p class="note">Comentários, etiquetas e alertas ficam salvos apenas neste navegador. Os indicadores usam os registros já sincronizados com a planilha.</p>`;
+
+  $('insPeriod').onchange = e => { insState.period = e.target.value; renderInsights(); };
+  $('insLocal').onchange = e => { insState.local = e.target.value; renderInsights(); };
+}
+function peopleList(rows) {
+  if (!rows.length) return '<div class="dim" style="font-size:13px;padding:6px 0">Sem registros com nome.</div>';
+  const max = Math.max(...rows.map(r => r[1]));
+  return rows.map(([n, q]) => `<div class="ins-person"><span class="ins-av">${esc(n.trim().charAt(0).toUpperCase())}</span><span class="ins-pn">${esc(n)}<i style="width:${(q / max) * 100}%"></i></span><b>${q}</b></div>`).join('');
+}
+function donut(f) {
+  const tot = f.reduce((a, x) => a + x.q, 0);
+  if (!tot) return '<div class="ins-donut empty"><span>0</span></div>';
+  let acc = 0;
+  const arcs = f.filter(x => x.q).map(x => { const p = (x.q / tot) * 100; const s = `<circle cx="21" cy="21" r="15.915" fill="none" stroke="${x.c}" stroke-width="6" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="${25 - acc}"><title>${x.n}: ${x.q}</title></circle>`; acc += p; return s; }).join('');
+  return `<div class="ins-donut"><svg viewBox="0 0 42 42">${arcs}</svg><span>${tot}<small>pendentes</small></span></div>`;
+}
+function barChart(serie) {
+  const W = 760, H = 230, padL = 34, padR = 40, padT = 16, padB = 34;
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const max = Math.max(1, ...serie.map(s => Math.max(s.reg, s.lib)));
+  const step = Math.ceil(max / 4) || 1, top = step * 4;
+  const gw = iw / serie.length, bw = Math.min(22, gw * 0.3);
+  const y = v => padT + ih - (v / top) * ih;
+  let g = '';
+  for (let k = 0; k <= 4; k++) { const v = step * k, yy = y(v); g += `<line x1="${padL}" x2="${W - padR}" y1="${yy}" y2="${yy}" class="grid-l"/><text x="${padL - 6}" y="${yy + 4}" class="ax" text-anchor="end">${v}</text>`; }
+  [0, 50, 100].forEach(p => { const yy = padT + ih - (p / 100) * ih; g += `<text x="${W - padR + 6}" y="${yy + 4}" class="ax pc">${p}%</text>`; });
+  const pts = [];
+  serie.forEach((s, k) => {
+    const cx = padL + gw * k + gw / 2;
+    g += `<g class="bar-g" data-ins-month="${s.m}"><rect x="${padL + gw * k}" y="${padT}" width="${gw}" height="${ih}" class="hit"/>
+      <rect x="${cx - bw - 2}" y="${y(s.reg)}" width="${bw}" height="${Math.max(0, padT + ih - y(s.reg))}" rx="4" class="b-reg"><title>${fmtMes(s.m)} • registrados: ${s.reg}</title></rect>
+      <rect x="${cx + 2}" y="${y(s.lib)}" width="${bw}" height="${Math.max(0, padT + ih - y(s.lib))}" rx="4" class="b-lib"><title>${fmtMes(s.m)} • liberados: ${s.lib}${s.np == null ? '' : ' • ' + s.np + '% no prazo'}</title></rect>
+      <text x="${cx}" y="${H - 12}" class="ax" text-anchor="middle">${fmtMesCurto(s.m)}</text></g>`;
+    if (s.np != null) pts.push([cx, padT + ih - (s.np / 100) * ih, s.np]);
+  });
+  if (pts.length > 1) g += `<polyline points="${pts.map(p => p[0] + ',' + p[1]).join(' ')}" class="np-line"/>`;
+  pts.forEach(p => { g += `<circle cx="${p[0]}" cy="${p[1]}" r="4" class="np-dot"><title>${p[2]}% no prazo</title></circle>`; });
+  return `<div class="ins-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolução mensal de incidentes registrados e liberados">${g}</svg></div>`;
+}
 
 /* ---------------- Renderização ---------------- */
 let lastThead = '', lastTbody = '';
@@ -1507,7 +1868,9 @@ function render() {
   ac.innerHTML = `<span>🔍 ${nConf === 1 ? '1 liberação aguarda' : `${nConf} liberações aguardam`} a sua conferência para ser finalizada.</span><button class="btn" data-goto="conferencia">Conferir agora</button>`;
 
   document.body.dataset.view = state.view;
-  $('stageTitle').textContent = VIEW_LABEL[state.view];
+  const abertos = state.filters.follow === 'abertos';
+  $('stageTitle').textContent = abertos ? `Em aberto${state.filters.mes ? ' · ' + fmtMes(state.filters.mes) : ''}` : VIEW_LABEL[state.view];
+  if (abertos) document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', 'false'));
   $('stageDesc').textContent = {
     pendentes: `Aguardando análise e liberação no Fluig • prazo de ${state.settings.prazoPadrao} dias úteis a partir do e-mail`,
     correcao: 'Enviados para correção • aguardando a devolutiva',
@@ -1515,6 +1878,7 @@ function render() {
     conferencia: 'Liberados no Fluig • confira para finalizar ou devolva',
     liberados: 'Conferidos e concluídos',
   }[state.view];
+  if (abertos) $('stageDesc').innerHTML = 'Todas as etapas, exceto finalizados • <button type="button" class="link-btn" data-clear>voltar para Pendentes</button>';
   const V = VIEWS[state.view];
   const sort = state.sort.key ? state.sort : V.sort;
   const rows = filtered().map(i => ({ i, x: info(i) }));
@@ -1532,7 +1896,7 @@ function render() {
   if (theadHtml !== lastThead) { $('grid').querySelector('thead').innerHTML = theadHtml; lastThead = theadHtml; }
 
   const tbodyHtml = rows.map(({ i, x }) =>
-    `<tr class="s-${x.sit}${correctionNeedsFollowup(i) ? ' corr-aging' : ''}" data-id="${esc(i.id)}">` +
+    `<tr class="s-${x.sit}${correctionNeedsFollowup(i) ? ' corr-aging' : ''}${metaFor(i.id).tag === 'liberado_antecipado' ? ' tag-ready' : ''}" data-id="${esc(i.id)}">` +
     V.cols.map(k => `<td class="${C[k].cls || ''}" data-label="${C[k].t}">${C[k].h(i, x)}${k === 'observacao' ? localMetaHtml(i) : ''}${k === 'sit' && correctionNeedsFollowup(i) ? '<span class="row-alert">● Cobrar devolutiva · 2+ dias úteis</span>' : ''}</td>`).join('') +
     (state.canEdit ? `<td class="cell-actions"><div class="actions">${actionsHtml(i)}</div></td>` : '') + '</tr>'
   ).join('');
@@ -2288,6 +2652,7 @@ function bind() {
   $('noticePanel').addEventListener('click', e => { if (e.target.closest('[data-goto],[data-follow]')) { toggleNoticePanel(false); animatePanel(); } });
   document.addEventListener('click', e => { if (!e.target.closest('#noticePanel') && !e.target.closest('#btnBell')) toggleNoticePanel(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleNoticePanel(false); closeSidebar(); } });
+  document.addEventListener('keydown', e => { const c = e.target.closest && e.target.closest('.monitor-card.clickable'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); c.click(); } });
   const topbar = $('topbar');
   window.addEventListener('scroll', () => topbar.classList.toggle('scrolled', window.scrollY > 4), { passive: true });
   $('btnNew').onclick = () => openIncident(null);
@@ -2296,6 +2661,19 @@ function bind() {
   $('btnSettings').onclick = openSettings;
   $('btnInsights').onclick = () => { renderInsights(); $('dlgInsights').showModal(); };
   $('kpiRefresh').onclick = renderInsights;
+  $('kpiContent').addEventListener('click', e => {
+    const go = (fn) => { $('dlgInsights').close(); setTimeout(() => { fn(); render(); animatePanel(); }, 200); };
+    const m = e.target.closest('[data-ins-month]');
+    if (m) return go(() => { state.view = 'pendentes'; Object.assign(state.filters, { mesBase: 'dataIncidente', mes: m.dataset.insMonth, sit: '', follow: '', local: insState.local }); state.view = 'pendentes'; });
+    const v = e.target.closest('[data-ins-view]');
+    if (v) return go(() => { state.view = v.dataset.insView; Object.assign(state.filters, { sit: '', follow: '', local: insState.local }); state.sort = { key: null, dir: 1 }; });
+    const st = e.target.closest('[data-ins-sit]');
+    if (st) return go(() => { state.view = 'pendentes'; Object.assign(state.filters, { sit: st.dataset.insSit, follow: '', local: insState.local }); });
+    const l = e.target.closest('[data-ins-local]');
+    if (l) return go(() => { state.view = 'pendentes'; Object.assign(state.filters, { local: l.dataset.insLocal, sit: '', follow: '', mes: '' }); });
+    const o = e.target.closest('[data-ins-open]');
+    if (o) { $('dlgInsights').close(); const inc = byId(o.dataset.insOpen); if (inc) setTimeout(() => openIncident(inc), 220); }
+  });
   $('commentSave').onclick = saveComment;
   $('btnFilters').onclick = () => { const f = $('filters'); f.classList.toggle('hidden'); $('btnFilters').setAttribute('aria-expanded', String(!f.classList.contains('hidden'))); };
   const clear = () => { Object.assign(state.filters, { mes: '', local: '', resp: '', tipo: '', sit: '', follow: '' }); state.search = ''; $('search').value = ''; render(); };
@@ -2322,7 +2700,8 @@ function bind() {
   document.body.addEventListener('click', e => {
     const g = e.target.closest('[data-goto]'); if (g) { state.view = g.dataset.goto; state.filters.sit = ''; state.filters.follow=''; state.sort = { key: null, dir: 1 }; render(); }
     const month=e.target.closest('[data-month]'); if(month) jumpToMonth(month.dataset.month);
-    const follow=e.target.closest('[data-follow]'); if(follow){ state.filters.follow=follow.dataset.follow; state.view=follow.dataset.follow==='correcao_2'?'correcao':'pendentes'; state.filters.sit=''; state.sort={key:null,dir:1}; render(); }
+    const oi=e.target.closest('[data-open-inc]'); if(oi){ e.stopPropagation(); const inc=byId(oi.dataset.openInc); if(inc) openIncident(inc); return; }
+    const follow=e.target.closest('[data-follow]'); if(follow){ state.filters.follow=follow.dataset.follow; state.view=follow.dataset.follow==='correcao_2'?'correcao':'pendentes'; state.filters.sit=''; state.filters.mes=''; state.sort={key:null,dir:1}; render(); animatePanel(); }
     if (e.target.closest('[data-clear]')) clear();
     if (e.target.closest('[data-close]')) e.target.closest('dialog').close();
   });
