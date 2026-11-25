@@ -750,6 +750,20 @@ dialog.drawer .dlg-body { padding-top: 18px; }
 .m-more { font-size: 11px; font-weight: 700; color: #7c908e; align-self: center; }
 .link-btn { border: none; background: none; padding: 0; color: var(--brand-2); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
 .local-tag { white-space: nowrap; }
+
+/* ===== Comentários compartilhados ===== */
+.cmt-shared { font-size: 12.5px; color: #0b6a66; background: #e6f7f5; border: 1px solid #c6ebe7; border-radius: 10px; padding: 8px 11px; margin-bottom: 12px; }
+.cmt-chip { display: inline-flex; max-width: 100%; margin-top: 4px; padding: 2px 9px; border-radius: 20px; border: 1px solid #d5e3e2; background: #fff; color: #35605d; font: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmt-chip:hover { border-color: #12bdb5; background: #effaf9; }
+button.row-alert { border: none; background: none; padding: 0; font: inherit; cursor: pointer; display: block; margin-top: 4px; }
+button.row-alert:hover { text-decoration: underline; }
+.comment-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cmt-av { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; background: #e2f8f6; color: #087f7b; font-weight: 800; font-size: 11px; }
+.comment-text { margin-top: 4px; white-space: normal; }
+.cmt-alert { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; margin-bottom: 8px; border-radius: 10px; background: #fff4e0; color: #8a5300; font-weight: 600; font-size: 13px; }
+.cmt-alert.done { background: var(--ok-bg); color: var(--ok); }
+.cmt-alert .btn { height: 30px; }
+.notice-toast.cmt, .notice-panel .alert.cmt { background: #eef6ff; color: #1d4ed8; border-color: #cfe0fb; }
 </style>
 </head>
 <body>
@@ -844,7 +858,7 @@ dialog.drawer .dlg-body { padding-top: 18px; }
       <div><label for="fResp">Responsável</label><select id="fResp"></select></div>
       <div><label for="fTipo">Tipo de incidente</label><select id="fTipo"></select></div>
       <div><label for="fSit">Situação</label><select id="fSit"></select></div>
-      <div><label for="fFollow">Acompanhamento</label><select id="fFollow"><option value="">Todos</option><option value="sem_analise">Sem análise há mais de 4 dias úteis</option><option value="correcao_2">Em correção há 2+ dias úteis</option><option value="abertos">Todos em aberto (todas as etapas)</option></select></div>
+      <div><label for="fFollow">Acompanhamento</label><select id="fFollow"><option value="">Todos</option><option value="sem_analise">Sem análise há mais de 4 dias úteis</option><option value="correcao_2">Em correção há 2+ dias úteis</option><option value="abertos">Todos em aberto (todas as etapas)</option><option value="comentarios">Com retorno sinalizado para conferir</option></select></div>
       <div class="filters-end"><button class="btn ghost" id="btnClearFilters">Limpar filtros</button></div>
     </div>
 
@@ -1093,8 +1107,8 @@ dialog.drawer .dlg-body { padding-top: 18px; }
 <!-- Recursos locais de acompanhamento: não alteram o fluxo nem o backend -->
 <dialog id="dlgComments" class="wide"><div class="dlg">
   <div class="dlg-head"><h2>Histórico de comentários</h2><p id="commentSummary"></p></div>
-  <div class="dlg-body"><div class="field"><label for="commentKind">Tipo de registro</label><select id="commentKind"><option value="Comentário / retorno">Comentário / retorno</option><option value="Reenvio / cobrança">Reenvio / cobrança</option><option value="Providência do aprendiz">Providência do aprendiz</option></select></div><div class="field" style="margin-top:10px"><label for="commentText">Descrição</label><textarea id="commentText" rows="3" placeholder="Registre a devolutiva, observação ou providência..."></textarea></div>
-    <div class="row-inline" style="margin-top:8px"><label class="check"><input type="checkbox" id="commentAlert"> Sinalizar para o aprendiz conferir</label><span class="foot-gap"></span><button class="btn primary" id="commentSave" type="button">Registrar comentário</button></div>
+  <div class="dlg-body"><div class="cmt-shared">👥 Os comentários e etiquetas ficam salvos na planilha e aparecem para todos que usam o app.</div><div class="form-grid" style="margin-bottom:10px"><div class="field"><label class="req" for="commentAuthor">Seu nome</label><input id="commentAuthor" autocomplete="name" placeholder="Ex.: Lara"></div><div class="field"><label for="commentKind">Tipo de registro</label><select id="commentKind"><option value="Comentário / retorno">Comentário / retorno</option><option value="Reenvio / cobrança">Reenvio / cobrança</option><option value="Providência do aprendiz">Providência do aprendiz</option></select></div></div><div class="field" style="margin-top:10px"><label for="commentText">Descrição</label><textarea id="commentText" rows="3" placeholder="Registre a devolutiva, observação ou providência..."></textarea></div>
+    <div class="row-inline" style="margin-top:8px"><label class="check"><input type="checkbox" id="commentAlert"> Sinalizar para a outra pessoa conferir (aparece no sino e na linha)</label><span class="foot-gap"></span><button class="btn primary" id="commentSave" type="button">Registrar comentário</button></div>
     <div class="section-title">Registros anteriores</div><div class="list" id="commentList"></div>
   </div><div class="dlg-foot"><button class="btn" type="button" data-close>Fechar</button></div>
 </div></dialog>
@@ -1221,6 +1235,7 @@ const Store = MODE !== 'local' ? {
   importIncidents: list => remote('apiImport', list, state.pin),
   saveHolidays: list => remote('apiSaveHolidays', list, state.pin),
   saveSettings: s => remote('apiSaveSettings', s, state.pin),
+  metaOp: (id, op) => remote('apiMetaOp', id, op, state.pin),
 } : {
   checkPin: async () => true,
   load: async () => ({ incidents: ls.get('ci_incidents', []), holidays: ls.get('ci_holidays', []), settings: ls.get('ci_settings', null) }),
@@ -1233,6 +1248,7 @@ const Store = MODE !== 'local' ? {
   importIncidents: async arr => { ls.set('ci_incidents', ls.get('ci_incidents', []).concat(arr)); return arr.length; },
   saveHolidays: async list => { ls.set('ci_holidays', list); return true; },
   saveSettings: async s => { ls.set('ci_settings', s); return true; },
+  metaOp: async () => true,
 };
 
 async function persist(promise, errMsg) {
@@ -1257,7 +1273,7 @@ const ss = {
 const OUT_KEY = 'ci_outbox_v1';
 let outbox = (() => { try { return JSON.parse(localStorage.getItem(OUT_KEY)) || []; } catch (e) { return []; } })();
 let flushing = false;
-const opId = op => (op.inc ? op.inc.id : op.id);
+const opId = op => (op.type === 'meta' ? op.key : op.inc ? op.inc.id : op.id);
 const isNetErr = e => !!(e && (e.net || /network|conex|connection|timeout|tempo esgotado|failed to fetch/i.test(String(e.message || e))));
 function saveOutbox() { try { localStorage.setItem(OUT_KEY, JSON.stringify(outbox)); } catch (e) { /* ignora */ } updatePending(); }
 function updatePending() {
@@ -1266,11 +1282,12 @@ function updatePending() {
   el.textContent = outbox.length === 1 ? '⏳ 1 alteração aguardando envio' : `⏳ ${outbox.length} alterações aguardando envio`;
 }
 function queueOp(op) { outbox = outbox.filter(o => opId(o) !== opId(op)); outbox.push(op); saveOutbox(); }
-const runOp = op => (op.type === 'save' ? Store.saveIncident(op.inc) : Store.deleteIncident(op.id));
+const runOp = op => (op.type === 'save' ? Store.saveIncident(op.inc) : op.type === 'meta' ? Store.metaOp(op.id, op.op) : Store.deleteIncident(op.id));
 /** Reaplica na tela o que ainda não chegou na planilha */
 function applyOutbox() {
   outbox.forEach(op => {
     if (op.type === 'save') { const k = state.incidents.findIndex(i => i.id === op.inc.id); if (k >= 0) state.incidents[k] = op.inc; else state.incidents.push(op.inc); }
+    else if (op.type === 'meta') aplicarMetaOp(metaFor(op.id), op.op);
     else state.incidents = state.incidents.filter(i => i.id !== op.id);
   });
 }
@@ -1547,8 +1564,9 @@ function renderStageMonitor(){
 /* ---------------- Filtros ---------------- */
 function filtered(view = state.view, applyFilters = true) {
   const f = state.filters; const q = norm(state.search);
-  const todosAbertos = applyFilters && view === state.view && f.follow === 'abertos';
+  const todosAbertos = applyFilters && view === state.view && (f.follow === 'abertos' || f.follow === 'comentarios');
   return state.incidents.filter(i => (todosAbertos ? i.status !== 'liberado' : viewOf(i) === view)).filter(i => {
+    if (applyFilters && f.follow === 'comentarios') { const m = auxMeta[i.id]; if (!(m && m.alert && !m.alertDone)) return false; }
     if (!applyFilters) return true;
     if (f.mes) { const d = i[f.mesBase]; if (!d || d.slice(0, 7) !== f.mes) return false; }
     if (f.local && i.local !== f.local) return false;
@@ -1591,27 +1609,81 @@ function renderFilters() {
   });
 }
 
-/* Metadados auxiliares mantidos somente neste navegador. Não são enviados ao Sheets. */
+/* Comentários, etiquetas e alertas: gravados na planilha (aba "Comentários e etiquetas")
+   e compartilhados com todos que usam o app. O navegador guarda só uma cópia para abrir rápido. */
 const META_KEY = 'ci_aux_metadata_v1';
+const META_MIGRATED_KEY = 'ci_meta_migrated_v1';
+let metaShared = false;
 let auxMeta = (() => { try { return JSON.parse(localStorage.getItem(META_KEY)) || {}; } catch(e) { return {}; } })();
-function saveAuxMeta(){ try { localStorage.setItem(META_KEY, JSON.stringify(auxMeta)); } catch(e) { toast('Não foi possível salvar o acompanhamento neste navegador.', true); } }
+const localMetaAntigo = (() => { try { return localStorage.getItem(META_MIGRATED_KEY) ? null : JSON.parse(localStorage.getItem(META_KEY) || 'null'); } catch (e) { return null; } })();
+function saveAuxMeta(){ try { localStorage.setItem(META_KEY, JSON.stringify(auxMeta)); } catch(e) { /* só cópia local */ } }
 function metaFor(id){ return auxMeta[id] || (auxMeta[id]={comments:[], tag:'', alert:false, alertDone:false}); }
+function aplicarMetaOp(m, op) {
+  m.comments = m.comments || [];
+  if (op.type === 'comment' && op.comment) {
+    if (!m.comments.some(c => c.id && c.id === op.comment.id)) m.comments.push(op.comment);
+    if (op.alert !== undefined) { m.alert = !!op.alert; m.alertDone = false; }
+  } else if (op.type === 'delComment') m.comments = m.comments.filter(c => c.id !== op.cid);
+  else if (op.type === 'tag') m.tag = op.tag || '';
+  else if (op.type === 'alert') { m.alert = !!op.alert; m.alertDone = false; }
+  else if (op.type === 'alertDone') { m.alertDone = !!op.done; if (op.by) { m.alertDoneBy = op.by; m.alertDoneAt = new Date().toISOString(); } }
+  return m;
+}
+/** Aplica na tela na hora e envia para a planilha (se cair a conexão, entra na fila e é reenviado) */
+function metaChange(id, op) {
+  aplicarMetaOp(metaFor(id), op); saveAuxMeta(); render();
+  if (MODE === 'local') return;
+  return sendOp({ type: 'meta', key: 'meta_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), id, op });
+}
+/** Uma vez só: envia para a planilha o que estava guardado apenas neste navegador */
+async function migrarMetaLocal() {
+  if (MODE === 'local' || !metaShared || !localMetaAntigo) return;
+  try { localStorage.setItem(META_MIGRATED_KEY, '1'); } catch (e) { /* ignora */ }
+  const ops = [];
+  Object.entries(localMetaAntigo).forEach(([id, m]) => {
+    if (!m || !byId(id)) return;
+    const srv = auxMeta[id] || {};
+    (m.comments || []).forEach((c, k) => {
+      const cid = c.id || ('mig_' + id + '_' + k + '_' + (c.at || ''));
+      if (!(srv.comments || []).some(x => x.id === cid || (x.text === c.text && x.at === c.at)))
+        ops.push([id, { type: 'comment', comment: Object.assign({}, c, { id: cid, author: c.author && c.author !== 'Registro local' ? c.author : (autorNome() || 'Registro anterior') }) }]);
+    });
+    if (m.tag && !srv.tag) ops.push([id, { type: 'tag', tag: m.tag }]);
+    if (m.alert && !srv.alert) ops.push([id, { type: 'alert', alert: true }]);
+    if (m.alert && m.alertDone && !srv.alertDone) ops.push([id, { type: 'alertDone', done: true }]);
+  });
+  for (const [id, op] of ops) await metaChange(id, op);
+  if (ops.length) toast(`${ops.length} comentário(s)/etiqueta(s) deste navegador foram compartilhados na planilha.`);
+}
+const autorNome = () => ls.get('ci_autor', '');
 function localMetaHtml(inc){ const m=metaFor(inc.id); let h='';
   if(m.tag==='aguardar') h+='<span class="local-tag wait">Aguardar</span>';
   if(m.tag==='liberado_antecipado') h+='<span class="local-tag ready" title="Liberado antes dos 4 dias úteis">✓ Já liberado</span>';
-  if(m.alert && !m.alertDone) h+='<span class="row-alert">● Retorno recebido · conferir</span>'; return h;
+  if(m.alert && !m.alertDone) h+=`<button type="button" class="row-alert" data-cmt="${esc(inc.id)}" title="Abrir comentários">● Retorno recebido · conferir</button>`;
+  const n=(m.comments||[]).length;
+  if(n){ const ult=m.comments[n-1]; h+=`<button type="button" class="cmt-chip" data-cmt="${esc(inc.id)}" title="${esc((ult.author||'')+': '+ult.text)}">💬 ${n} · ${esc(String(ult.text).slice(0,38))}${String(ult.text).length>38?'…':''}</button>`; }
+  return h;
 }
 let commentTargetId=null;
 function openComments(id){ commentTargetId=id; const inc=byId(id); if(!inc)return;
-  $('commentSummary').textContent=resumo(inc); $('commentText').value=''; $('commentAlert').checked=!!metaFor(id).alert;
-  renderComments(); $('dlgComments').showModal(); }
+  $('commentSummary').textContent=resumo(inc); $('commentText').value=''; $('commentAlert').checked=false;
+  $('commentAuthor').value=autorNome();
+  renderComments(); $('dlgComments').showModal(); setTimeout(()=>($('commentAuthor').value?$('commentText'):$('commentAuthor')).focus(),40); }
 function renderComments(){ const m=metaFor(commentTargetId), list=$('commentList');
-  list.innerHTML=m.comments.length ? [...m.comments].reverse().map(c=>`<div class="comment-entry"><div class="comment-meta"><b>${esc(c.kind||'Comentário')}</b> · ${esc(c.author||'Registro local')} · ${new Date(c.at).toLocaleString('pt-BR')}</div><div>${esc(c.text).replace(/\\n/g,'<br>')}</div></div>`).join('') : '<div class="list-empty">Nenhum comentário registrado.</div>'; }
+  const alerta = m.alert ? `<div class="cmt-alert ${m.alertDone?'done':''}">${m.alertDone?`✓ Alerta conferido${m.alertDoneBy?' por '+esc(m.alertDoneBy):''}${m.alertDoneAt?' em '+new Date(m.alertDoneAt).toLocaleString('pt-BR'):''}`:'● Sinalizado para o aprendiz conferir'}<button type="button" class="btn" id="cmtAlertToggle">${m.alertDone?'Reativar':'Marcar como conferido'}</button></div>` : '';
+  list.innerHTML = alerta + (m.comments.length ? [...m.comments].reverse().map(c=>`<div class="comment-entry"><div class="comment-meta"><span class="cmt-av">${esc((c.author||'?').trim().charAt(0).toUpperCase())}</span><b>${esc(c.author||'Sem nome')}</b> · ${esc(c.kind||'Comentário')} · ${new Date(c.at).toLocaleString('pt-BR')}</div><div class="comment-text">${esc(c.text).replace(/\n/g,'<br>')}</div></div>`).join('') : '<div class="list-empty">Nenhum comentário registrado.</div>');
+  const b=$('cmtAlertToggle'); if(b) b.onclick=()=>{ toggleLearnerAlert(commentTargetId); renderComments(); };
+}
 function saveComment(){ const value=$('commentText').value.trim(); if(!value){toast('Digite o comentário antes de registrar.',true);return;}
-  const m=metaFor(commentTargetId); m.comments.push({kind:$('commentKind').value,text:value,at:new Date().toISOString(),author:'Registro local'});
-  m.alert=$('commentAlert').checked; m.alertDone=false; saveAuxMeta(); $('commentText').value=''; renderComments(); render(); toast('Comentário registrado neste navegador.'); }
-function toggleLocalTag(id,tag){ const m=metaFor(id); m.tag=m.tag===tag?'':tag; saveAuxMeta(); render(); toast(m.tag?'Etiqueta atualizada.':'Etiqueta removida.'); }
-function toggleLearnerAlert(id){ const m=metaFor(id); m.alertDone=!m.alertDone; saveAuxMeta(); render(); toast(m.alertDone?'Alerta marcado como conferido.':'Alerta reativado.'); }
+  const author=$('commentAuthor').value.trim(); if(!author){ toast('Informe seu nome para todos saberem quem escreveu.', true); $('commentAuthor').focus(); return; }
+  ls.set('ci_autor', author);
+  const op={ type:'comment', comment:{ id:'c_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), kind:$('commentKind').value, text:value, at:new Date().toISOString(), author } };
+  if($('commentAlert').checked) op.alert=true;
+  metaChange(commentTargetId, op);
+  $('commentText').value=''; $('commentAlert').checked=false; renderComments();
+  toast(MODE==='local'?'Comentário registrado.':'Comentário registrado e compartilhado com todos.'); }
+function toggleLocalTag(id,tag){ const m=metaFor(id); const novo=m.tag===tag?'':tag; metaChange(id,{type:'tag',tag:novo}); toast(novo?'Etiqueta aplicada para todos.':'Etiqueta removida.'); }
+function toggleLearnerAlert(id){ const m=metaFor(id); metaChange(id,{type:'alertDone',done:!m.alertDone,by:autorNome()}); toast(metaFor(id).alertDone?'Alerta marcado como conferido.':'Alerta reativado.'); }
 /* ---------------- Indicadores ---------------- */
 const insState = { period: '6', local: '' };
 const MES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -1797,7 +1869,7 @@ function renderInsights() {
       </div>
     </section>
   </div>
-  <p class="note">Comentários, etiquetas e alertas ficam salvos apenas neste navegador. Os indicadores usam os registros já sincronizados com a planilha.</p>`;
+  <p class="note">Os indicadores usam os registros já sincronizados com a planilha.</p>`;
 
   $('insPeriod').onchange = e => { insState.period = e.target.value; renderInsights(); };
   $('insLocal').onchange = e => { insState.local = e.target.value; renderInsights(); };
@@ -1868,8 +1940,8 @@ function render() {
   ac.innerHTML = `<span>🔍 ${nConf === 1 ? '1 liberação aguarda' : `${nConf} liberações aguardam`} a sua conferência para ser finalizada.</span><button class="btn" data-goto="conferencia">Conferir agora</button>`;
 
   document.body.dataset.view = state.view;
-  const abertos = state.filters.follow === 'abertos';
-  $('stageTitle').textContent = abertos ? `Em aberto${state.filters.mes ? ' · ' + fmtMes(state.filters.mes) : ''}` : VIEW_LABEL[state.view];
+  const abertos = state.filters.follow === 'abertos' || state.filters.follow === 'comentarios';
+  $('stageTitle').textContent = state.filters.follow === 'comentarios' ? 'Retornos para conferir' : abertos ? `Em aberto${state.filters.mes ? ' · ' + fmtMes(state.filters.mes) : ''}` : VIEW_LABEL[state.view];
   if (abertos) document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', 'false'));
   $('stageDesc').textContent = {
     pendentes: `Aguardando análise e liberação no Fluig • prazo de ${state.settings.prazoPadrao} dias úteis a partir do e-mail`,
@@ -1955,6 +2027,10 @@ function syncNotices() {
     if (!el || el.classList.contains('hidden') || !el.innerHTML.trim()) return null;
     return { id, cls, label, html: el.innerHTML, sig: id + '|' + el.textContent.replace(/\s+/g, ' ').trim() };
   }).filter(Boolean);
+  const retornos = state.incidents.filter(i => i.status !== 'liberado' && auxMeta[i.id] && auxMeta[i.id].alert && !auxMeta[i.id].alertDone);
+  if (retornos.length) noticeList.push({ id: 'cmt', cls: 'cmt', label: 'Comentários',
+    html: `<span>💬 ${retornos.length === 1 ? '1 incidente tem' : retornos.length + ' incidentes têm'} retorno sinalizado para conferir.</span><button class="btn" data-follow="comentarios">Ver</button>`,
+    sig: 'cmt|' + retornos.map(i => i.id).join(',') });
   const n = noticeList.length;
   $('bellCount').textContent = n; $('bellCount').classList.toggle('hidden', !n);
   $('btnBell').title = n ? `Notificações (${n})` : 'Sem notificações';
@@ -2525,7 +2601,9 @@ const showLoading = on => $('loading').classList.toggle('hidden', !on);
 /* ---------------- Carga inicial ---------------- */
 function applyData(d) {
     state.incidents = (d && d.incidents) || [];
+    if (MODE !== 'local' && d && d.meta && typeof d.meta === 'object') { auxMeta = JSON.parse(JSON.stringify(d.meta)); metaShared = true; }
     applyOutbox();
+    saveAuxMeta(true);
     state.holidays = (d && d.holidays) || [];
     if (d && d.settings) state.settings = Object.assign({ prazoPadrao: 4, contarDiaEnvio: false }, d.settings);
     state.pinRequired = !!(d && d.pinRequired);
@@ -2547,6 +2625,7 @@ async function loadAll(showSpinner = true, silent = false) {
     const d = await Store.load();
     applyData(d); saveSnapshot(d);
     setConn(true);
+    setTimeout(migrarMetaLocal, 300);
   } catch (e) {
     console.error(e);
     setConn(false);
@@ -2711,6 +2790,8 @@ function bind() {
       const k = th.dataset.sort, cur = state.sort.key || VIEWS[state.view].sort.key, dir = state.sort.key ? state.sort.dir : VIEWS[state.view].sort.dir;
       state.sort = { key: k, dir: cur === k ? -dir : 1 }; render(); return;
     }
+    const cm = e.target.closest('[data-cmt]');
+    if (cm) { e.stopPropagation(); openComments(cm.dataset.cmt); return; }
     const more = e.target.closest('[data-more]');
     if (more) { e.stopPropagation(); openRowMenu(more, more.closest('tr').dataset.id); return; }
     const b = e.target.closest('[data-act]'); if (b) { onTableAction(b.dataset.act, b.closest('tr').dataset.id); return; }
