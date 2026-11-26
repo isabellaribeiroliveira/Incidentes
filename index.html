@@ -764,6 +764,7 @@ button.row-alert:hover { text-decoration: underline; }
 .cmt-alert.done { background: var(--ok-bg); color: var(--ok); }
 .cmt-alert .btn { height: 30px; }
 .notice-toast.cmt, .notice-panel .alert.cmt { background: #eef6ff; color: #1d4ed8; border-color: #cfe0fb; }
+.ver-info { color: var(--ink-3); }
 </style>
 </head>
 <body>
@@ -818,6 +819,7 @@ button.row-alert:hover { text-decoration: underline; }
 
 <div class="app">
   <div class="alert conn-alert hidden" id="alertConn" role="alert"></div>
+  <div class="alert conn-alert hidden" id="alertMeta" role="alert"></div>
   <div class="alert info hidden" id="modeInfo">👁 Modo consulta: você vê todos os registros, mas só o responsável pode alterar.</div>
   <!-- Fontes das notificações (exibidas no empilhamento e no sino) -->
   <div class="notice-src" aria-hidden="true">
@@ -868,7 +870,7 @@ button.row-alert:hover { text-decoration: underline; }
     <div class="empty hidden" id="empty"></div>
   </main>
 
-  <footer class="foot"><button type="button" id="connInfo" class="conn" title="Testar conexão"></button><span id="storageInfo"></span><span id="syncInfo" class="hidden">⟳ Atualizando…</span><span id="pendingInfo" class="pending hidden"></span></footer>
+  <footer class="foot"><button type="button" id="connInfo" class="conn" title="Testar conexão"></button><span id="storageInfo"></span><span id="syncInfo" class="hidden">⟳ Atualizando…</span><span id="pendingInfo" class="pending hidden"></span><span id="verInfo" class="ver-info"></span></footer>
 </div>
 </div>
 
@@ -1129,7 +1131,7 @@ button.row-alert:hover { text-decoration: underline; }
   window.CI_LOGO_URL = "";
   /* Links do App da Web do Google Apps Script. Pode ter mais de um: o primeiro que responder é usado. */
   window.CI_API_URLS = [
-    "https://script.google.com/macros/s/AKfycbyis1H65Ubvk2Rbj0zhsOc2s_ccQIERfmAMrpckSPLhOLk5iJVHKZhveJ-tJVorI9AxYg/exec"
+    "https://script.google.com/macros/s/AKfycbzHQbPLvut9fdhcl5JD3hgBBtd-2uwj_4EZyATQz6KNQCM64yYjZLn8oRdVpENmPSYRWg/exec"
   ];
 </script>
 <script>
@@ -1611,7 +1613,9 @@ function renderFilters() {
 
 /* Comentários, etiquetas e alertas: gravados na planilha (aba "Comentários e etiquetas")
    e compartilhados com todos que usam o app. O navegador guarda só uma cópia para abrir rápido. */
+const APP_VERSAO = '2026-11-26';
 const META_KEY = 'ci_aux_metadata_v1';
+let serverInfo = { carregado: false, versao: '', meta: false };
 const META_MIGRATED_KEY = 'ci_meta_migrated_v1';
 let metaShared = false;
 let auxMeta = (() => { try { return JSON.parse(localStorage.getItem(META_KEY)) || {}; } catch(e) { return {}; } })();
@@ -1633,6 +1637,7 @@ function aplicarMetaOp(m, op) {
 function metaChange(id, op) {
   aplicarMetaOp(metaFor(id), op); saveAuxMeta(); render();
   if (MODE === 'local') return;
+  if (serverInfo.carregado && !serverInfo.meta) { toast('⚠ Salvo só neste computador: o script do Google implantado está desatualizado. Veja o aviso vermelho no topo.', true); return; }
   return sendOp({ type: 'meta', key: 'meta_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), id, op });
 }
 /** Uma vez só: envia para a planilha o que estava guardado apenas neste navegador */
@@ -1994,6 +1999,11 @@ function render() {
   $('btnLock').classList.toggle('hidden', !state.pinRequired);
   $('btnLock').innerHTML = state.canEdit ? '🔓 <span class="lbl">Sair da edição</span>' : '🔒 <span class="lbl">Entrar para editar</span>';
   $('modeInfo').classList.toggle('hidden', state.canEdit);
+  const semMeta = MODE !== 'local' && serverInfo.carregado && !serverInfo.meta;
+  const am = $('alertMeta');
+  am.classList.toggle('hidden', !semMeta);
+  if (semMeta) am.innerHTML = `<span><b>⚠ Comentários e etiquetas NÃO estão sendo compartilhados.</b> O script do Google que respondeu (${esc(linkCurto())}) é uma versão antiga${serverInfo.versao ? ' (' + esc(serverInfo.versao) + ')' : ''}. O que for marcado fica só neste computador. No Apps Script: cole o Code.gs novo, salve e faça <b>Implantar › Gerenciar implantações › ✏️ › Nova versão</b>.</span><button class="btn" id="btnDiag">Testar conexão</button>`;
+  $('verInfo').textContent = `App ${APP_VERSAO}` + (MODE === 'local' ? '' : ` • Script ${serverInfo.versao || (serverInfo.carregado ? 'antigo' : '…')}` + (serverInfo.carregado ? (serverInfo.meta ? ' • 💬 comentários compartilhados' : ' • ⚠ comentários só neste computador') : ''));
   syncNotices();
 }
 
@@ -2602,6 +2612,7 @@ const showLoading = on => $('loading').classList.toggle('hidden', !on);
 function applyData(d) {
     state.incidents = (d && d.incidents) || [];
     if (MODE !== 'local' && d && d.meta && typeof d.meta === 'object') { auxMeta = JSON.parse(JSON.stringify(d.meta)); metaShared = true; }
+    if (MODE !== 'local' && d) serverInfo = { carregado: true, versao: d.versao || '', meta: !!(d.meta && typeof d.meta === 'object') };
     applyOutbox();
     saveAuxMeta(true);
     state.holidays = (d && d.holidays) || [];
@@ -2660,16 +2671,21 @@ function pingUrl(url) {
     document.head.appendChild(sc);
   });
 }
+function linkCurto() {
+  if (MODE === 'gas') return 'link do Google aberto agora';
+  const u = API_URLS[apiIdx] || ''; return u ? '…' + u.split('/s/')[1].slice(0, 12) + '…' : 'nenhum link';
+}
 async function diagnose() {
   $('dgList').innerHTML = '<div class="list-empty">Testando…</div>';
   $('dlgDiag').showModal();
-  if (MODE === 'gas') { $('dgList').innerHTML = '<div class="list-row">✅ Aberto pelo link do Google: a comunicação é direta com a planilha.</div>'; return; }
+  if (MODE === 'gas') { $('dgList').innerHTML = `<div class="diag ${serverInfo.meta ? 'ok' : 'bad'}">✅ Aberto pelo link do Google: a comunicação é direta com a planilha.<br>Versão do script: ${esc(serverInfo.versao || 'antiga')}<br>${serverInfo.meta ? '✅ Compartilha comentários e etiquetas' : '❌ Versão antiga: não compartilha comentários e etiquetas.'}</div>`; return; }
   const out = [];
   for (const [k, url] of API_URLS.entries()) {
     const r = await pingUrl(url);
     const id = url.split('/s/')[1].slice(0, 14) + '…';
     out.push(`<div class="diag ${r.ok ? 'ok' : 'bad'}"><b>${r.ok ? '✅' : '❌'} Link ${k + 1}</b> <code>${esc(id)}</code><br>` +
-      (r.ok ? `Funcionando • planilha “${esc(r.d.planilha)}” • versão do script ${esc(r.d.versao)}` : esc(r.why)) + '</div>');
+      (r.ok ? `Funcionando • planilha “${esc(r.d.planilha)}” • versão do script ${esc(r.d.versao)}<br>` +
+        ((r.d.recursos || []).includes('meta') ? '✅ Compartilha comentários e etiquetas' : '❌ <b>Versão antiga:</b> não compartilha comentários e etiquetas. Implante o Code.gs novo como Nova versão.') : esc(r.why)) + '</div>');
     $('dgList').innerHTML = out.join('');
   }
   if (!API_URLS.length) $('dgList').innerHTML = '<div class="list-empty">Nenhum link configurado no index.html (CI_API_URLS).</div>';
